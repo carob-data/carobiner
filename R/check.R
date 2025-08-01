@@ -70,6 +70,7 @@ check_pubs <- function(x, path, answ) {
 			pubs <- unlist(strsplit(x$publication, ";|; "))
 			pubs <- yuri::simpleURI(pubs)
 			for (pub in pubs) {
+				if (is.null(pub)) { next }
 				where <- grep(pub, allpubs, fixed=TRUE)
 				if (length(where) == 0) {
 					answ[nrow(answ)+1, ] <- c("reference file missing", pub)
