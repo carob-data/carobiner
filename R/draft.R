@@ -64,7 +64,7 @@ read_format <- function(files, format, fun) {
 	is_fmt <- grepl(paste0("\\.", format, "$"), files, ignore.case=TRUE)
 	if (any(is_fmt)) {
 		ff <- files[is_fmt]
-		out <- lapply(ff, \(f) fun(f))
+		out <- lapply(ff, \(f) try(fun(f)))
 		names(out) <- basename(ff)
 	} else {
 		out <- NULL
