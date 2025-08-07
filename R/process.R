@@ -357,7 +357,7 @@ process_carob <- function(path, group="", quiet=FALSE, check=NULL, cache=TRUE) {
 		if (length(noscript) > 0) {
 			# remove compiled data for which there is no matching script
 			for (i in noscript) {
-				dff <- list.files(dirname(have$csvfile[i]), pattern=gsub("_meta.csv", "", basename(have$csvfile[i])))
+				dff <- list.files(dirname(have$csvfile[i]), pattern=gsub("_meta.csv", "", basename(have$csvfile[i])), full.names=TRUE)
 				file.remove(dff)
 			}
 			have <- have[-noscript, ,drop=FALSE]
