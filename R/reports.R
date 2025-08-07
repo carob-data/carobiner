@@ -38,15 +38,12 @@ make_reports <- function(path, group="", cache=TRUE) {
 		if (length(fff) == 0) return()
 	}
 
-
 	rmd <- system.file("reports/dataset.Rmd", package="carobiner")
 	if (file.exists(rmd)) {
 		rmd <- readLines(rmd, warn=FALSE)
-
 		grp <- basename(dirname(fff))
 		
 		for (i in 1:length(fff)) {
-
 			uri <- grep("^uri <- ", rmd)
 			igrp <- grep("^group <- ", rmd)
 			rmd[igrp] <- paste0("group <- '", grp[i], "'")

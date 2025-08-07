@@ -353,14 +353,14 @@ process_carob <- function(path, group="", quiet=FALSE, check=NULL, cache=TRUE) {
 
 		have <- merge(have_csv, have_R, by=c("group", "URI"), all=TRUE)
 
-		i <- which(is.na(have$script))
-		if (length(i) > 0) {
+		noscript <- which(is.na(have$script))
+		if (length(noscript) > 0) {
 			# remove compiled data for which there is no matching script
-			file.remove(have$csvfile[i])
-			file.remove(gsub("_meta", "", have$csvfile[i]))
-			suppressWarnings(file.remove(gsub("_meta", "_long", have$csvfile[i])))
-			suppressWarnings(file.remove(gsub("\\.csv$", ".html", have$csvfile[i])))
-			have <- have[-i, ,drop=FALSE]
+			for (i in noscript) {
+				dff <- list.files(dirname(have$csvfile[i]), pattern=gsub("_meta.csv", "", basename(have$csvfile[i])))
+				file.remove(dff)
+			}
+			have <- have[-noscript, ,drop=FALSE]
 		}
 		
 		keep <- which(is.na(have$data) | (have$Rtime > have$csvtime))

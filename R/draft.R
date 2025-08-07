@@ -3,8 +3,16 @@ quotes <- function(x) {
 	paste0("\"", x, "\"") 
 }
 
-grepaste <- function(pattern, x, ignore.case=TRUE) {
+grepaste <- function(pattern, x, ignore.case=TRUE, oper=NULL, value) {
 	v <- grep(pattern, x, ignore.case=ignore.case, value=TRUE)
+	if (!is.null(oper)) {
+		if (oper == "and") {
+			v <- grep(value, v, ignore.case=ignore.case, value=TRUE)
+		} else { # not 
+			i <- grepl(value, v, ignore.case=ignore.case)
+			v <- v[!i]
+		}
+	}
 	#if (length(v) > 1) {
 	#	v <- paste0(v[1], "\"]], #", paste(v[-1], collapse=", "))
 	#} else if (length(v) > 0) {
@@ -37,13 +45,22 @@ grepr <- function(x) {
 		maturity_date = grepaste("mat.*date", x),
 		flowering_date = grepaste("flow.*date", x),
 		transplanting_date = grepaste("trans.*date", x),
-		N_fertilizer = grepaste("^N$|nitrogen", x),
-		P_fertilizer = grepaste("^P$|phosph", x),
-		K_fertilizer = grepaste("^K$|potas", x),
-		S_fertilizer = grepaste("^S$|sulf", x),
-		B_fertilizer = grepaste("^B$|boron", x),
-		Mg_fertilizer = grepaste("^Mg$|magnesium", x),
-		Zn_fertilizer = grepaste("^Zn$|zinc", x),
+		N_fertilizer = grepaste("^N$|nitrogen", x, oper="not", value="soil|%"),
+		P_fertilizer = grepaste("^P$|phosph", x, oper="not", value="soil|mg/kg"),
+		K_fertilizer = grepaste("^K$|potas", x, oper="not", value="soil|mg/kg"),
+		S_fertilizer = grepaste("^S$|sulf", x, oper="not", value="soil|mg/kg"),
+		B_fertilizer = grepaste("^B$|boron", x, oper="not", value="soil|mg/kg"),
+		Mg_fertilizer = grepaste("^Mg$|magnesium", x, oper="not", value="soil|mg/kg"),
+		Zn_fertilizer = grepaste("^Zn$|zinc", x, oper="not", value="soil|mg/kg"),
+		
+		soil_N = grepaste("^N$|nitrogen", x, oper="and", value="soil|%"),
+		soil_P = grepaste("^P$|phosph", x, oper="and", value="soil|mg/kg"),
+		soil_K = grepaste("^K$|potas", x, oper="and", value="soil|mg/kg"),
+		soil_S = grepaste("^S$|sulf", x, oper="and", value="soil|mg/kg"),
+		soil_B = grepaste("^B$|boron", x, oper="and", value="soil|mg/kg"),
+		soil_Mg = grepaste("^Mg$|magnesium", x, oper="and", value="soil|mg/kg"),
+		soil_Zn = grepaste("^Zn$|zinc", x, oper="and", value="soil|mg/kg"),
+		
 		soil_texture =  grepaste("texture", x),
 		yield = grepaste("yield", x)
 	)
