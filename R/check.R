@@ -105,7 +105,7 @@ check_longrecs <- function(answ, longrecs, records) {
 	}
 	cns <- c(colnames(records), colnames(longrecs))
 
-	expected <- c("date", "depth", "depth_top", "depth_bottom")
+	expected <- c("date", "depth", "depth_top", "depth_bottom", "disease")
 	if (!any(cns %in% expected)) {
 		answ[nrow(answ)+1, ] <- c("time/depth", "no time/depth variables in long records?")	
 	}
@@ -202,8 +202,8 @@ get_groupvars <- function(group) {
 }
 
 
-check_records <- function(answ, x, group, check, required=TRUE, dupid=TRUE) {
-	vars <- get_groupvars(group)
+check_records <- function(answ, x, group, check="all", required=TRUE, dupid=TRUE) {
+	vars <- carobiner:::get_groupvars(group)
 	trms <- vocal::accepted_variables(vars)
 	answ <- check_combined(x, trms, answ, required=required)
 
@@ -274,12 +274,12 @@ carob_vocabulary <- function(x=NULL, save=FALSE, add=TRUE, reset=FALSE) {
 
 check_terms <- function(metadata=NULL, records=NULL, longrecs=NULL, wth=NULL, group="", check="all") {
 
-	check_packages("yuri", "0.2-4")
-	check_packages("vocal", "0.3-4")
+	check_packages("yuri", "0.2-5")
+	check_packages("vocal", "0.3-5")
 	
 	voc <- carob_vocabulary()
 	vocal::set_vocabulary(voc)
-	vocal::check_vocabulary(quiet=FALSE)
+	vocal::check_vocabulary(delay=24, quiet=FALSE)
 	
 	answ <- data.frame(check="", msg="")[0,]
 	if (check == "none") {

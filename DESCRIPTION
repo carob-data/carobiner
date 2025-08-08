@@ -2,9 +2,9 @@ Package: carobiner
 Type: Package
 Title: Standardizing agricultural research data 
 Description: A collection functions to support the "Carob" project to standardize and aggregate open agricultural research data trough reproducible workflows. See https://carob-data.org and https://github.com/carob-data/carob for details.
-Version: 0.6-9
+Version: 0.7-0
 Depends: R (>= 4.1.0)
-Imports: readxl, writexl, httr, data.table, jsonlite, xml2, rappdirs, yuri (>= 0.2-4), vocal (>= 0.3-4)
+Imports: readxl, writexl, httr, data.table, jsonlite, xml2, rappdirs, yuri (>= 0.2-5), vocal (>= 0.3-5)
 Remotes: github::carob-data/yuri, github::carob-data/vocal
 Suggests: terra, revtools, stringr, rmarkdown, kableExtra, summarytools
 Date: 2025-07-02
