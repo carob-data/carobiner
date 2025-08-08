@@ -264,6 +264,12 @@ draft <- function(uri, path, group="draft", overwrite=FALSE) {
 #group <- "survey"
 #overwrite <- TRUE
 
+	gh <- try(carobiner::on_github(uri), silent=TRUE)
+	if (NCOL(gh) > 1) {
+		warning("this uri is already in Carob")
+		print(gh)
+	}
+
 	voc <- carob_vocabulary()
 	vocal::set_vocabulary(voc)
 
