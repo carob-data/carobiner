@@ -4,7 +4,7 @@ importFrom(xml2, read_xml, xml_text)
 
 export(
 bindr, change_names, find_outliers, fix_name, get_locations, get_function, get_references, 
-geocode, geocode_duplicates, is_excel, replace_values, read.excel, read.excel.hdr,
+geocode, geocode_duplicates, is_excel, replace_values, read.excel, read.excel.hdr, read.RData,
 eng_months_to_nr, on_github, excel_textbox, carob_vocabulary, draft, 
 usr_pwd, get_data, get_metadata, check_terms, write_files, compile_carob, make_carob, process_carob, run_carob
 )

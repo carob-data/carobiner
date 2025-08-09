@@ -4,6 +4,13 @@
 # license 	
 
 
+read.RData <- function(f) {
+	e <- new.env()
+	load(f, envir=e, verbose=FALSE)
+	as.list(e)
+}
+
+
 filter_files <- function(x) { 
 	if (is.null(x)) return(x)
 	x <- grep("\\.json$|ok\\.txt$|\\.pdf$|_files.txt$|\\.zip$|\\.doc$|\\.docx$|/old_", x, value=TRUE, invert=TRUE)
@@ -14,6 +21,7 @@ filter_files <- function(x) {
 
 .download_files <- function(path, files, cache) {
 
+	dir.create(path, FALSE, FALSE)
 	outf <- gsub("%20", "_", basename(files))
 	outf <- file.path(path, outf)
 	oks <- rep(1, length(outf))
@@ -47,7 +55,7 @@ filter_files <- function(x) {
 
 	filter_files(outf) 
 } 
-
+	
 .copy_files <- function(path, files, cache) {
 
 	outf <- file.path(path, basename(files))
@@ -127,6 +135,7 @@ get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, 
 	}
 	dir.create(dpath, FALSE, TRUE)
 	if (!is.null(files)) {
+		dpath <- file.path(dpath, uname)
 		file_downloads(files, dpath, cache)
 	} else {
 		if (protocol == "LSMS") {
