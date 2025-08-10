@@ -279,7 +279,7 @@ check_terms <- function(metadata=NULL, records=NULL, longrecs=NULL, wth=NULL, gr
 	
 	voc <- carob_vocabulary()
 	vocal::set_vocabulary(voc)
-	vocal::check_vocabulary(delay=24, quiet=FALSE)
+	vocal::check_vocabulary(delay=4, quiet=FALSE)
 	
 	answ <- data.frame(check="", msg="")[0,]
 	if (check == "none") {
