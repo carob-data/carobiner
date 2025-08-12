@@ -181,6 +181,12 @@ check_weather <- function(x, answ) {
 	answ
 }
 
+check_soil <- function(x, answ) {
+	trms <- vocal::accepted_variables(c("all", "soil"))
+	check_combined(x, trms, answ)
+}
+
+
 
 check_metadata <- function(x, answ) {
 	trms <- vocal::accepted_variables("metadata")
@@ -272,7 +278,7 @@ carob_vocabulary <- function(x=NULL, save=FALSE, add=TRUE, reset=FALSE) {
 }
 
 
-check_terms <- function(metadata=NULL, records=NULL, longrecs=NULL, wth=NULL, group="", check="all") {
+check_terms <- function(metadata=NULL, records=NULL, longrecs=NULL, wth=NULL, soil=NULL, group="", check="all") {
 
 	check_packages("yuri", "0.2-5")
 	check_packages("vocal", "0.3-5")
@@ -318,6 +324,10 @@ check_terms <- function(metadata=NULL, records=NULL, longrecs=NULL, wth=NULL, gr
 	if (!is.null(wth)) {
 		answ <- check_weather(wth, answ)
 	}
+	if (!is.null(soil)) {
+		answ <- check_soil(soil, answ)
+	}
+
 	answ
 }
 
