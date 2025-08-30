@@ -1,6 +1,6 @@
 
 
-write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, soil_meta=NULL, options=NULL) {
+write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, var_meta=NULL, options=NULL) {
 
 	group <- metadata$group
 #	check_group(group)
@@ -12,8 +12,8 @@ write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, soil_met
 	if (!is.null(wth)) {
 		wth$dataset_id <- cleanuri
 	}
-	if (!is.null(soil_meta)) {
-		soil_meta$dataset_id <- cleanuri
+	if (!is.null(var_meta)) {
+		var_meta$dataset_id <- cleanuri
 	}
 
 	to_mem <- FALSE
@@ -44,7 +44,7 @@ write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, soil_met
 		dir.create(file.path(path, "data", "evaluation", group), FALSE, TRUE)
 		wide$dataset_id <- metadata$dataset_id
 		opt <- options("carobiner_check")
-		answ <- check_terms(metadata, wide, long, wth, soil_meta, group, check=opt)	
+		answ <- check_terms(metadata, wide, long, wth, var_meta, group, check=opt)	
 		fmsg <- file.path(path, "data", "messages", group, paste0(cleanuri, ".csv"))
 		if (file.exists(fmsg)) file.remove(fmsg)
 		
@@ -90,7 +90,7 @@ write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, soil_met
 	metadata <- sort_by_terms(metadata, "metadata", group)
 	long <- sort_by_terms(long, "longrecs", group)
 	wth <- sort_by_terms(wth, "weather", group)
-	soil_meta <- sort_by_terms(soil_meta, "soil", group)
+	var_meta <- sort_by_terms(var_meta, "soil", group)
 
 	if (nrow(wide) > 0) {
 		metadata$crops <- paste(sort(unique(wide$crop)), collapse=";")
@@ -114,9 +114,9 @@ write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, soil_met
 		wthf <- file.path(path, "data", "clean", group, paste0(cleanuri, "_wth.csv"))
 		data.table::fwrite(wth, wthf, row.names=FALSE)
 	}
-	if (!is.null(soil_meta)) {
-		soilf <- file.path(path, "data", "clean", group, paste0(cleanuri, "_meta_soil.csv"))
-		data.table::fwrite(soil_meta, soilf, row.names=FALSE)
+	if (!is.null(var_meta)) {
+		soilf <- file.path(path, "data", "clean", group, paste0(cleanuri, "_meta_variable.csv"))
+		data.table::fwrite(var_meta, soilf, row.names=FALSE)
 	}
 
 	mf <- gsub(".csv$", "_meta.csv", outf)
