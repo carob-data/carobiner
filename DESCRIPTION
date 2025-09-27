@@ -5,7 +5,7 @@ Description: A collection functions to support the "Carob" project to standardiz
 Version: 0.7-1
 Depends: R (>= 4.1.0)
 Imports: readxl, writexl, httr, data.table, jsonlite, xml2, rappdirs, yuri (>= 0.2-5), vocal (>= 0.3-5)
-Remotes: github::carob-data/yuri, github::carob-data/vocal
+Remotes: github::carob-data/yuri, github::controvoc/vocal
 Suggests: terra, revtools, stringr, rmarkdown, kableExtra, summarytools
 Date: 2025-08-12
 Encoding: UTF-8
