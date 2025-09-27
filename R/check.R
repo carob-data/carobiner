@@ -4,7 +4,11 @@
 
 check_packages <- function(name, version) {
 	if (utils::packageVersion(name) < version) {
-		stop(paste0('please update package ', name, " with:\n   remotes::install.github('carob-data/", name, "')"))
+		if (name == "vocal") {
+			stop(paste0('please update package ', name, " with:\n   remotes::install.github('controvoc/", name, "')"))
+		} else {
+			stop(paste0('please update package ', name, " with:\n   remotes::install.github('carob-data/", name, "')"))		
+		}
 	}
 }
 
