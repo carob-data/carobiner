@@ -248,7 +248,7 @@ check_records <- function(answ, x, group, check="all", required=TRUE, dupid=TRUE
 carob_vocabulary <- function(x=NULL, save=FALSE, add=TRUE, reset=FALSE) {
 
 	f <- file.path(rappdirs::user_data_dir(), ".carob/voc")
-	def <- "github:carob-data/terminag"
+	def <- "github:controvoc/terminag"
 
 	if (reset) {
 		if (file.exists(f)) file.remove(f)
