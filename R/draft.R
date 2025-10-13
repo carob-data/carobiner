@@ -116,7 +116,13 @@ get_raw_data <- function(ff) {
 	is_other <- !is_known
 	if (any(is_other)) {
 		foth <- ff[is_other]
-		out$other <- basename(foth)
+		ido <- grepl("\\.do$", foth)
+		if (any(!ido)) {
+			out$other <- basename(foth[!ido])
+		}
+		if (any(ido)) {
+			out$do <- basename(foth[ido])
+		}
 	}
 	out
 }
@@ -149,6 +155,11 @@ get_filenames <- function(d) {
 		n <- n+length(foth)
 		f <- c(f, paste0(paste0("\tf", (length(f)+1):n), ' <- ff[basename(ff) == "', basename(foth), '"]'))
 	}
+
+	if (!is.null(d$do)) {
+		f <- c(f, paste("#\tthere are", length(d$do), "stata 'do' files that can be consulted"))
+	}
+	
 	paste(f, collapse="\n")
 }
 
@@ -188,7 +199,7 @@ read_files <- function(d) {
 	if (any(!is.null(d$dta))) {
 		nn <- length(d$dta)
 		sq <- n:(n+nn-1)
-		r <- c(r, paste0(paste0("\tr", sq), " <- read.dta(f", sq, ")"))
+		r <- c(r, paste0(paste0("\tr", sq), " <- haven::read_dta(f", sq, ")"))
 		n <- n + nn
 	}
 	
@@ -264,13 +275,17 @@ draft <- function(uri, path, group="draft", overwrite=FALSE) {
 #group <- "survey"
 #overwrite <- TRUE
 
+	if (file.exists(fscript) && (!overwrite)) {
+		stop(paste(fscript, "exists. Use 'overwrite=TRUE' to overwrite it"))
+	}
+
 	gh <- try(carobiner::on_github(uri), silent=TRUE)
 	if (NCOL(gh) > 1) {
-		warning("this uri is already in Carob")
+		warning("this dataset is already in Carob")
 		print(gh)
 	}
 
-	voc <- carob_vocabulary()
+	voc <- carobiner::carob_vocabulary()
 	vocal::set_vocabulary(voc)
 
 	did <- yuri::simpleURI(uri)
@@ -279,9 +294,6 @@ draft <- function(uri, path, group="draft", overwrite=FALSE) {
 	fscript <- file.path(path, "scripts/_draft", group, paste0(did, ".R"))
 	dir.create(dirname(fscript), FALSE, TRUE)
 
-	if (file.exists(fscript) && (!overwrite)) {
-		stop(paste(fscript, "exists. Use 'overwrite=TRUE' to overwrite it"))
-	}
 	ff  <- carobiner::get_data(uri, path, group)
 
 	meta <-	carobiner::get_metadata(uri, path, group, major=0, minor=0, draft=TRUE)
