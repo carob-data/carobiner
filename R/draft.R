@@ -274,10 +274,14 @@ draft <- function(uri, path, group="draft", overwrite=FALSE) {
 #uri <- "hdl:11529/10548230"
 #group <- "survey"
 #overwrite <- TRUE
+	did <- yuri::simpleURI(uri)
+	## check on_carob ...
 
+	fscript <- file.path(path, "scripts/_draft", group, paste0(did, ".R"))
 	if (file.exists(fscript) && (!overwrite)) {
 		stop(paste(fscript, "exists. Use 'overwrite=TRUE' to overwrite it"))
 	}
+	dir.create(dirname(fscript), FALSE, TRUE)
 
 	gh <- try(carobiner::on_github(uri), silent=TRUE)
 	if (NCOL(gh) > 1) {
@@ -288,11 +292,7 @@ draft <- function(uri, path, group="draft", overwrite=FALSE) {
 	voc <- carobiner::carob_vocabulary()
 	vocal::set_vocabulary(voc)
 
-	did <- yuri::simpleURI(uri)
-	## check on_carob ...
 	
-	fscript <- file.path(path, "scripts/_draft", group, paste0(did, ".R"))
-	dir.create(dirname(fscript), FALSE, TRUE)
 
 	ff  <- carobiner::get_data(uri, path, group)
 
