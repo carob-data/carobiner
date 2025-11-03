@@ -20,7 +20,7 @@ make_reports <- function(path, group="", cache=TRUE) {
 	needs <- c("rmarkdown", "kableExtra", "leaflet", "summarytools")
 	have <- installed.packages()
 	i <- !(needs %in% have)
-	if (any(i)) install.packages(needs[i])
+	if (any(i)) install.packages(needs[i], repos="https://cloud.r-project.org")
 
 	fff <- list.files(file.path(path, "data", "clean", group), pattern="_meta\\.csv$", recursive=TRUE, full.names=TRUE)
 	fff <- grep("_nodata_meta", fff, ignore.case=TRUE, invert=TRUE, value=TRUE)
