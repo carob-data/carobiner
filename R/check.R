@@ -137,7 +137,7 @@ find_duplicates <- function(answ, x, tmr=NULL) {
 }
 
 
-check_treatments <- function(answ, treatment, exp_type, vars, type) {
+check_treatments <- function(answ, treatment, exp_type, vars, records, type) {
 	if (is.na(treatment)) {
 		answ[nrow(answ)+1, ] <- c("metadata", paste(type, "cannot be NA"))
 		return(answ)
@@ -157,8 +157,23 @@ check_treatments <- function(answ, treatment, exp_type, vars, type) {
 	
 	i <- !(treat %in% vars)
 	if (any(i)) {
-		answ[nrow(answ)+1, ] <- c("metadata", 
-			paste("not a variable in the data:",  paste(treat[i], collapse=", ")))
+		#answ[nrow(answ)+1, ] <- c("metadata", 
+		#	paste("not a variable in the data:",  paste(treat[i], collapse=", ")))
+		stop(paste("treatment is not a variable in the data:",  treat[i], collapse=", "))
+	}
+	
+	if (type == "treatment") {
+		for (v in treat) {
+			if (any(is.na(records[v]))) {
+				answ[nrow(answ)+1, ] <- c("metadata", 
+					paste("missing values in treatment variable",  v, collapse=", "))
+			}
+			u <- na.omit(unique(records[v]))
+			if (length(u) < 2) {
+				answ[nrow(answ)+1, ] <- c("metadata", 
+					paste("no variation in treatment variable",  v, collapse=", "))
+			}
+		}
 	}
 	answ
 }
@@ -299,10 +314,10 @@ check_terms <- function(metadata=NULL, records=NULL, longrecs=NULL, wth=NULL, so
 		answ <- check_metadata(metadata, answ)
 		recnms <- c(names(records), names(longrecs))
 		if (!is.null(metadata$treatment_vars)) {
-			answ <- check_treatments(answ, metadata$treatment_vars, metadata$data_type, recnms, "treatment")
+			answ <- check_treatments(answ, metadata$treatment_vars, metadata$data_type, recnms, records, "treatment")
 		}
 		if (!is.null(metadata$response_vars)) {
-			answ <- check_treatments(answ, metadata$response_vars, metadata$data_type, recnms, "response")
+			answ <- check_treatments(answ, metadata$response_vars, metadata$data_type, recnms, records, "response")
 		}
 	}
 	if (!is.null(records)) {
