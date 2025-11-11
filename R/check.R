@@ -164,11 +164,12 @@ check_treatments <- function(answ, treatment, exp_type, vars, records, type) {
 	
 	if (type == "treatment") {
 		for (v in treat) {
-			if (any(is.na(records[v]))) {
+			rv <- records[,v]
+			if (any(is.na(rv))) {
 				answ[nrow(answ)+1, ] <- c("metadata", 
 					paste("missing values in treatment variable",  v, collapse=", "))
 			}
-			u <- na.omit(unique(records[v]))
+			u <- na.omit(unique(rv))
 			if (length(u) < 2) {
 				answ[nrow(answ)+1, ] <- c("metadata", 
 					paste("no variation in treatment variable",  v, collapse=", "))
