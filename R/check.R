@@ -146,6 +146,7 @@ find_duplicates <- function(answ, x, tmr=NULL) {
 
 
 check_treatments <- function(answ, treatment, exp_type, vars, records, type) {
+
 	if (is.na(treatment)) {
 		answ[nrow(answ)+1, ] <- c("metadata", paste(type, "cannot be NA"))
 		return(answ)
@@ -157,20 +158,22 @@ check_treatments <- function(answ, treatment, exp_type, vars, records, type) {
 			if (grepl("experiment|trial", exp_type)) {
 				answ[nrow(answ)+1, ] <- c("metadata", "treatment_vars cannot be 'none' for experiments")
 				return(answ)
-			} 
+			}
 		}
 		treat <- treat[treat  != "none"]
 		if (length(treat) == 0) return(answ)
 	}
 	
-	i <- !(treat %in% vars)
-	if (any(i)) {
-		#answ[nrow(answ)+1, ] <- c("metadata", 
-		#	paste("not a variable in the data:",  paste(treat[i], collapse=", ")))
-		stop(paste("treatment is not a variable in the data:",  treat[i], collapse=", "))
-	}
 	
 	if (type == "treatment") {
+		i <- !(treat %in% vars)
+		if (any(i)) {
+			#answ[nrow(answ)+1, ] <- c("metadata", 
+			#	paste("not a variable in the data:",  paste(treat[i], collapse=", ")))
+			stop(paste("treatment is not a variable in the data:",  treat[i], collapse=", "))
+		}
+		
+
 		for (v in treat) {
 			rv <- records[,v]
 			if (any(is.na(rv))) {
