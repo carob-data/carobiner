@@ -24,6 +24,14 @@ check_consistency <- function(x, answ) {
 			}
 		}
 	}
+	if (!is.null(x$yield_moisture)) {
+		if (all(is.na(x$yield_moisture))) {
+			if (is.null(x$yield_isfresh)) {
+				answ[nrow(answ)+1, ] <- c("yield_isfresh", "yield_isfresh must be set to TRUE or NA if yield_moisture is NA")
+			}
+		}
+	}
+	
 	answ
 }
 
