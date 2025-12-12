@@ -164,16 +164,15 @@ check_treatments <- function(answ, treatment, exp_type, vars, records, type) {
 		if (length(treat) == 0) return(answ)
 	}
 	
+	i <- !(treat %in% vars)
+	if (any(i)) {
+		answ[nrow(answ)+1, ] <- c("metadata", 
+			paste(type, "is not a variable in the data:",  paste(treat[i], collapse=", ")))
+		#stop(paste(type, "is not a variable in the data:",  treat[i], collapse=", "))
+	}
 	
 	if (type == "treatment") {
-		i <- !(treat %in% vars)
-		if (any(i)) {
-			#answ[nrow(answ)+1, ] <- c("metadata", 
-			#	paste("not a variable in the data:",  paste(treat[i], collapse=", ")))
-			stop(paste("treatment is not a variable in the data:",  treat[i], collapse=", "))
-		}
-		
-
+		treat <- treat[treat %in% names(records)]
 		for (v in treat) {
 			rv <- records[,v]
 			if (any(is.na(rv))) {
