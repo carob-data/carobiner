@@ -399,7 +399,7 @@ process_carob <- function(path, group="", quiet=FALSE, check=NULL, cache=TRUE) {
 		ok <- FALSE
 		try(ok <- carob_script(path))
 		if (!ok) {
-			message(paste("  processing failed for:\n", basename(f)))
+			message(paste("  processing failed: ", basename(f)))
 		}
 		utils::flush.console()
 	}
