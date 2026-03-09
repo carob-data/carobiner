@@ -98,7 +98,7 @@ usr_pwd <- function(path, protocol) {
 		if (is.null(p)) {
 			p <- list()
 		} else {
-			p[[protocol]]
+			as.list(p[[protocol]])
 		}
 	}
 }
@@ -142,7 +142,7 @@ check_package_version <- function(path) {
 	}
 }
 
-get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE, protocol="") {
+get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE, protocol="", username=NULL, password=NULL) {
 
 	check_package_version(path)
 
@@ -166,11 +166,15 @@ get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, 
 	} else {
 		set_pwds(path)
 		if (protocol == "LSMS") {
-			p <- usr_pwd(path, "LSMS")
 			dpath <- file.path(dpath, uname)
-			ff <- yuri:::get_LSMS(uri, dpath, p$username, p$password, cache=cache)
+			if (is.null(password) || is.null(username)) {
+				p <- usr_pwd(path, "LSMS")
+				ff <- yuri:::get_LSMS(uri, dpath, p$username, p$password, cache=cache)
+			} else {
+				ff <- yuri:::get_LSMS(uri, dpath, username, password, cache=cache)
+			}
 		} else {
-			ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=recursive, filter=FALSE)
+			ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=recursive, filter=FALSE, username, password)
 		}
 		if (!isTRUE(length(ff) > 0)) {
 			stop("no files found")
