@@ -29,7 +29,7 @@ checkVersion <- function(vmeta, major, minor, fpath) {
 				major <- paste0(major, ".", minor)
 			}
 			if (!interactive()) {
-				if (major > vmeta) {
+				if (as.numeric(major) > as.numeric(vmeta)) {
 					file.remove(list.files(fpath, full.names=TRUE))
 					stop(paste0("version ", major, " in script but found ", vmeta, " in data. Cache was cleared, run again"), call.=FALSE)	
 				} else {
