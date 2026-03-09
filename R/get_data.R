@@ -89,8 +89,22 @@ file_downloads <- function(files, path, cache) {
 }
 
 
-
 usr_pwd <- function(path, protocol) {
+	fpwd <- file.path(path, "passwords.R")
+	if (file.exists(fpwd)) {
+		pwds <- function(){NULL}
+		source(fpwd, local=TRUE)
+		p <- pwds()
+		if (is.null(p)) {
+			p <- list()
+		} else {
+			p[[protocol]]
+		}
+	}
+}
+
+
+set_pwds <- function(path, protocol) {
 	loadNamespace("yuri")	
 	if (is.null(.carob_environment$passwords)) {
 		fpwd <- file.path(path, "passwords.R")
@@ -131,10 +145,11 @@ get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, 
 		dpath <- file.path(dpath, uname)
 		file_downloads(files, dpath, cache)
 	} else {
-		usr_pwd(path)
+		set_pwds(path)
 		if (protocol == "LSMS") {
+			p <- usr_pwd(path, "LSMS")
 			dpath <- file.path(dpath, uname)
-			ff <- get_LSMS(uri, dpath, username, password, cache=cache)
+			ff <- yuri:::get_LSMS(uri, dpath, p$username, p$password, cache=cache)
 		} else {
 			ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=recursive, filter=FALSE)
 		}

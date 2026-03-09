@@ -17,7 +17,7 @@
 	}
 }
 
-checkVersion <- function(vmeta, major, minor) {
+checkVersion <- function(vmeta, major, minor, fpath) {
 	if (is.na(vmeta)) {
 		if (!(is.na(major) && is.na(minor))) {
 			stop(paste("version supplied where there is none? You can use 'NA'"), call.=FALSE)			
@@ -28,14 +28,22 @@ checkVersion <- function(vmeta, major, minor) {
 			if (!is.na(minor)) {
 				major <- paste0(major, ".", minor)
 			}
-			stop(paste("version", major, "provided but expected", vmeta), call.=FALSE)	
+			if (!interactive()) {
+				if (major < vmeta) {
+					file.remove(list.files(fpath, full.names=TRUE))
+					stop(paste0("version ", major, " in script but found ", vmeta, " in data. Cache was cleared, run again"), call.=FALSE)	
+				} else {
+					stop(paste0("version ", major, " in script but found ", vmeta, " in data. Fix script."), call.=FALSE)					
+				}
+			}
+			stop(paste0("version ", major, " in script but found ", vmeta, ". Fix script or remove files with cache=FALSE"), call.=FALSE)	
 		}
 	}
 }
 
 get_metadata <- function(uri, path, group, major, minor, ...) {
 	if (isTRUE(grepl("doi:10.48529", uri))) {
-		return(LSMS_metadata(uri, group, path, major, minor, ...))
+		return(yuri:::LSMS_metadata(uri, group, path, major, minor, ...))
 	}
 	dataset_id <- yuri::simpleURI(uri)
 	jpath <- file.path(path, "data", "raw", group)
@@ -46,7 +54,7 @@ get_metadata <- function(uri, path, group, major, minor, ...) {
 	
 	draft <- isTRUE(d$draft)	
 	if (!draft) {
-		checkVersion(m$version, major=major, minor=minor)
+		checkVersion(m$version, major=major, minor=minor, file.path(jpath, dataset_id))
 		#m$publisher <- NULL 
 	}
 	d$draft <- NULL
