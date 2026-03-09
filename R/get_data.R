@@ -125,7 +125,26 @@ set_pwds <- function(path, protocol) {
 }
 
 
+check_package_version <- function(path) {
+	if (!isTRUE(.carob_environment$version_checked)) {
+		fv <- file.path(path, "misc/version")
+		if (file.exists(fv)) {
+			v <- readLines(fv)
+			v <- grep("carobiner:", v, value=TRUE)
+			if (length(v) > 0) {
+				v <- gsub("carobiner:", "", v)
+			}
+			if (v > packageVersion("carobiner")) {
+				stop("install the current version of 'carobiner' with remotes::install_github(\"carob-data/carobiner\")")
+			}
+			.carob_environment$version_checked <- TRUE
+		}
+	}
+}
+
 get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE, protocol="") {
+
+	check_package_version(path)
 
 	if (is.null(path)) {
 		dpath <- file.path(tempdir(), "carob", fsep="/")
