@@ -12,11 +12,11 @@ Make the Carob database
 \description{
 Make the Carob database. 
 
-\code{run_carob} runs a single Carob script for a dataset. Carob scripts download data to "carob/data/raw", re-organize th data, check the variable names and controlled vocabulary used, check data types, ranges, and location of the coordinates, and write clean data to "carob/data/clean"
+\code{run_carob} runs a single Carob script for a dataset. Carob scripts download data to "<path>/data/raw", re-organize the data, check the variable names and controlled vocabulary used, check data types, ranges, and location of the coordinates, and write clean data to "carob/data/clean"
 
 \code{process_carob} runs all the Carob scripts. 
 
-\code{compile_carob} reads all the clean data and combines them into two files, one for the dataset descriptions, one for all records, and saves these to "carob/data")
+\code{compile_carob} combineds all the standardized data by "group" and saves these to "<path>/data/compiled")
 
 \code{make_carob} is a convenience function that first runs \code{process_carob} and then runs \code{compile_carob} 
 }
@@ -24,9 +24,9 @@ Make the Carob database.
 
 \usage{
 run_carob(cleanuri, path, group="", quiet=FALSE)
-process_carob(path, group="", quiet=FALSE, check=NULL, cache=TRUE)
-compile_carob(path, group="", split_license=FALSE, zip=FALSE, excel=FALSE, cache=FALSE)
-make_carob(path, group="", quiet=FALSE, check="all", report=FALSE, combine=FALSE, cache=TRUE, ...)
+process_carob(path, group="", quiet=FALSE, check=NULL, cache=TRUE, purge=FALSE)
+compile_carob(path, group="", split_license=FALSE, zip=FALSE, excel=FALSE, cache=TRUE)
+make_carob(path, group="", quiet=FALSE, check="all", report=FALSE, combine=FALSE, cache=TRUE, purge=FALSE, ...)
 }
  
 \arguments{
@@ -41,10 +41,11 @@ make_carob(path, group="", quiet=FALSE, check="all", report=FALSE, combine=FALSE
   \item{split_license}{logical. Make a separate aggregation for data with a CC license?}
   \item{excel}{logical. Also write the results into an excel file?}
   \item{zip}{logical. zip the aggregated data?}
+  \item{purge}{logical. If \code{TRUE}, datasets with the wrong version number are purged (removed)}
   \item{...}{additional arguments passed to compile_carob}
 }
 
 \value{
-none. Run for the side effects.
+none. Used for the side effect of creating files.
 }
 

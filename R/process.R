@@ -129,7 +129,7 @@ combine_compiled <- function(path, zip=TRUE, ...) {
 }
 
 
-compile_carob <- function(path, group="", split_license=FALSE, zip=FALSE, excel=FALSE, cache=FALSE) {
+compile_carob <- function(path, group="", split_license=FALSE, zip=FALSE, excel=FALSE, cache=TRUE) {
 	warn <- options("warn")
 	if (warn$warn < 1) {
 		on.exit(options(warn=warn$warn))
@@ -302,7 +302,9 @@ run_carob <- function(cleanuri, path, group="", quiet=FALSE) {
 
 
 
-process_carob <- function(path, group="", quiet=FALSE, check=NULL, cache=TRUE) {
+process_carob <- function(path, group="", quiet=FALSE, check=NULL, cache=TRUE, purge=FALSE) {
+
+	.carob_environment$purge <- isTRUE(purge)
 
 	if (!file.exists(path)) {
 		stop("path does not exist")
@@ -414,10 +416,10 @@ process_carob <- function(path, group="", quiet=FALSE, check=NULL, cache=TRUE) {
 }
 
 
-make_carob <- function(path, group="", quiet=FALSE, check="all", report=FALSE, combine=FALSE, cache=TRUE, ...) {
+make_carob <- function(path, group="", quiet=FALSE, check="all", report=FALSE, combine=FALSE, cache=TRUE, purge=FALSE, ...) {
 	get_packages(group)
 	message(" === process ==="); utils::flush.console()
-	process_carob(path, group=group, quiet=quiet, check=check, cache=cache)
+	process_carob(path, group=group, quiet=quiet, check=check, cache=cache, purge=purge)
 	message(" === compile ==="); utils::flush.console()
 	out <- compile_carob(path, group=group, cache=cache, ...)
 	if (report) {

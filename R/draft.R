@@ -260,7 +260,7 @@ match_org <- function(x, xd=.25) {
 	x <- trimws(unlist(strsplit(x, ";")))
 	for (i in 1:length(x)) {
 		if (x[i] == "") next
-		d <- adist(x[i], v$longname)
+		d <- utils::adist(x[i], v$longname)
 		if ((min(d, na.rm=TRUE) / nchar(x[i])) < xd) {
 			x[i] <- v[which.min(d), 1]
 		}

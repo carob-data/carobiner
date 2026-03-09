@@ -179,7 +179,7 @@ check_treatments <- function(answ, treatment, exp_type, vars, records, type) {
 				answ[nrow(answ)+1, ] <- c("metadata", 
 					paste("missing values in treatment variable",  v, collapse=", "))
 			}
-			u <- na.omit(unique(rv))
+			u <- stats::na.omit(unique(rv))
 			if (length(u) < 2) {
 				answ[nrow(answ)+1, ] <- c("metadata", 
 					paste("no variation in treatment variable",  v, collapse=", "))
@@ -239,7 +239,7 @@ get_groupvars <- function(group) {
 
 
 check_records <- function(answ, x, group, check="all", required=TRUE, dupid=TRUE) {
-	vars <- carobiner:::get_groupvars(group)
+	vars <- get_groupvars(group)
 	trms <- vocal::accepted_variables(vars)
 	answ <- check_combined(x, trms, answ, required=required)
 

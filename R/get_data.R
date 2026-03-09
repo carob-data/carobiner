@@ -134,7 +134,7 @@ check_package_version <- function(path) {
 			if (length(v) > 0) {
 				v <- gsub("carobiner:", "", v)
 			}
-			if (v > packageVersion("carobiner")) {
+			if (v > utils::packageVersion("carobiner")) {
 				stop("install the current version of 'carobiner' with remotes::install_github(\"carob-data/carobiner\")")
 			}
 			.carob_environment$version_checked <- TRUE

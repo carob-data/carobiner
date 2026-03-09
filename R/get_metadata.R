@@ -28,15 +28,15 @@ checkVersion <- function(vmeta, major, minor, fpath) {
 			if (!is.na(minor)) {
 				major <- paste0(major, ".", minor)
 			}
-			if (!interactive()) {
+			if (isTRUE(.carob_environment$purge)) {
 				if (as.numeric(major) > as.numeric(vmeta)) {
 					file.remove(list.files(fpath, full.names=TRUE))
-					stop(paste0("version ", major, " in script but found ", vmeta, " in data. Cache was cleared, run again"), call.=FALSE)	
+					stop(paste0("version ", major, " in script but version ", vmeta, " reported by data. Cache was cleared, run again"), call.=FALSE)	
 				} else {
-					stop(paste0("version ", major, " in script but found ", vmeta, " in data. Fix script."), call.=FALSE)					
+					stop(paste0("version ", major, " in script but version ", vmeta, " reported by data. Fix script."), call.=FALSE)					
 				}
 			}
-			stop(paste0("version ", major, " in script but found ", vmeta, ". Fix script or remove files with cache=FALSE"), call.=FALSE)	
+			stop(paste0("version ", major, " in script but version ", vmeta, " reported by data. Fix script or remove files with purge=TRUE"), call.=FALSE)	
 		}
 	}
 }
