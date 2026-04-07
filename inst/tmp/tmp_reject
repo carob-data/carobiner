@@ -1,0 +1,53 @@
+# R script for "carob"
+# license: GPL (>=3)
+
+## ISSUES
+# list processing issues here so that an editor can look at them
+
+
+carob_script <- function(path) {
+
+"
+_title_
+
+_description_
+"
+
+	uri <- "_uri_"
+	group <- "_group_"
+	ff  <- carobiner::get_data(uri, path, group)
+
+## Non-metadata .json files in ff (e.g. nested Dataverse Dataset/*.json). Parsed with jsonlite::fromJSON.
+## Optional string snapshots: lapply(json_list, function(x) jsonlite::toJSON(x, pretty=TRUE, auto_unbox=TRUE))
+	jmeta <- paste0(yuri::simpleURI(uri), ".json")
+	json_paths <- ff[grepl("\\.json$", ff, ignore.case=TRUE)]
+	json_paths <- json_paths[!tolower(basename(json_paths)) %in% tolower(c(jmeta, "metadata.json"))]
+	json_list <- if (length(json_paths) > 0) {
+		stats::setNames(lapply(json_paths, jsonlite::fromJSON), basename(json_paths))
+	} else {
+		list()
+	}
+
+	meta <- carobiner::get_metadata(uri, path, group, major=_major_, minor=_minor_,
+		data_organization = "_dataorg_",
+		publication = _pub_,
+		project = NA,
+		carob_date = "_today_",
+		design = _design_,
+		data_type = NA,
+		treatment_vars = "",
+		response_vars = "", 
+		carob_contributor = "Your Name",
+		completion = 0,	
+		notes = ""
+	)
+	
+
+_filename_
+
+_read_
+	return(FALSE)
+}
+
+## now test your function in a _clean_ R environment (no packages loaded, no other objects available)
+# carob_script(path=_____)

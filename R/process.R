@@ -327,7 +327,7 @@ process_carob <- function(path, group="", quiet=FALSE, check=NULL, cache=TRUE, p
 	ffR <- list.files(file.path(base, group), pattern="\\.R$", full.names=TRUE, recursive=TRUE)
 	ff_un <- grepl("^_", basename(ffR))
 	ffR <- ffR[!ff_un]
-	ffR <- ffR[!grepl("/_pending/|/_draft/|/_rejected/", ffR)]
+	ffR <- ffR[!grepl("/_pending/|/_draft/|/_rejected/|/_AI/", ffR)]
 	#ffR <- ffR[!grepl("/_removed/", ffR)]
 	#ffR <- ffR[basename(ffR) != "template.R"]
 

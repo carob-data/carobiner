@@ -269,6 +269,16 @@ match_org <- function(x, xd=.25) {
 }
 
 
+## TRUE if match_names() produced at least one mapped column (not only empty data.frame() stubs).
+draft_has_tabular_mappings <- function(nms_chunks) {
+	if (length(nms_chunks) < 1) {
+		return(FALSE)
+	}
+	txt <- paste(nms_chunks, collapse = "\n")
+	grepl("\t\t[a-zA-Z][a-zA-Z0-9_]* = r[0-9a-z]*\\[\\[", txt)
+}
+
+
 draft <- function(uri, path, group="draft", overwrite=FALSE) {
 
 #uri <- "hdl:11529/10548230"
@@ -276,12 +286,6 @@ draft <- function(uri, path, group="draft", overwrite=FALSE) {
 #overwrite <- TRUE
 	did <- yuri::simpleURI(uri)
 	## check on_carob ...
-
-	fscript <- file.path(path, "scripts/_draft", group, paste0(did, ".R"))
-	if (file.exists(fscript) && (!overwrite)) {
-		stop(paste(fscript, "exists. Use 'overwrite=TRUE' to overwrite it"))
-	}
-	dir.create(dirname(fscript), FALSE, TRUE)
 
 	gh <- try(carobiner::on_github(uri), silent=TRUE)
 	if (NCOL(gh) > 1) {
@@ -292,8 +296,6 @@ draft <- function(uri, path, group="draft", overwrite=FALSE) {
 	voc <- carobiner::carob_vocabulary()
 	vocal::set_vocabulary(voc)
 
-	
-
 	ff  <- carobiner::get_data(uri, path, group)
 
 	meta <-	carobiner::get_metadata(uri, path, group, major=0, minor=0, draft=TRUE)
@@ -301,7 +303,63 @@ draft <- function(uri, path, group="draft", overwrite=FALSE) {
 	v <- as.character(v)
 	v[is.na(v)] <- "NA"
 
-	s <- readLines(system.file("tmp/tmp", package="carobiner"))
+	use_rejected <- FALSE
+	reject_reasons <- character(0)
+	nms <- NULL
+	wf <- ""
+	r <- ""
+
+	if (length(ff) < 1) {
+		use_rejected <- TRUE
+		reject_reasons <- c(reject_reasons, "get_data() returned no files")
+	} else {
+		d <- try(get_raw_data(ff))
+
+		if (inherits(d, "try-error")) {
+			use_rejected <- TRUE
+			reject_reasons <- c(reject_reasons, "get_raw_data() failed (could not read files for draft preview)")
+		} else {
+			wf <- get_filenames(d)
+			r <- read_files(d)
+
+			can_read <- grepl("\\.xlsx$|\\.xls$|\\.csv$|\\.dta|\\.rds", ff, ignore.case=TRUE)
+
+			if (!any(can_read)) {
+				use_rejected <- TRUE
+				reject_reasons <- c(reject_reasons, "no .xlsx/.xls/.csv/.dta/.rds files in download (draft cannot auto-map columns)")
+			} else {
+				d$other <- NULL
+				if (!is.null(d$xls)) {
+					for (i in 1:length(d$xls)) {
+						if (length(d$xls[[i]]) == 1) {
+							nms <- c(nms, match_names(d$xls[[i]][[1]], i))
+						} else {
+							for (j in 1:length(d$xls[[i]])) {
+								nms <- c(nms, match_names(d$xls[[i]][[j]], paste0(i, letters[j])))
+							}
+						}
+					}
+				}
+				if (!is.null(d$csv)) {
+					for (i in 1:length(d$csv)) {
+						nms <- c(nms, match_names(d$csv[[i]], i))
+					}
+				}
+				if (!is.null(d$dta)) {
+					for (i in 1:length(d$dta)) {
+						nms <- c(nms, match_names(d$dta[[i]], i))
+					}
+				}
+				if (!draft_has_tabular_mappings(nms)) {
+					use_rejected <- TRUE
+					reject_reasons <- c(reject_reasons, "no source columns matched draft() terminag heuristics (only empty data.frame() stubs or no tabular sheets)")
+				}
+			}
+		}
+	}
+
+	tmplf <- system.file("tmp", if (use_rejected) "tmp_reject" else "tmp", package="carobiner")
+	s <- readLines(tmplf)
 
 	s <- gsub("_title_", gsub("\"", "'", meta$title), s)
 	s <- gsub("_description_", gsub("\"", "'", meta$description), s)
@@ -314,66 +372,40 @@ draft <- function(uri, path, group="draft", overwrite=FALSE) {
 	s <- gsub("_today_", as.character(as.Date(Sys.time())), s)
 	s <- gsub("_design_", ifelse(is.na(meta$design), "NA", quotes(meta$design)), s)
 
-
-	d <- try(get_raw_data(ff))
-	
-	if (inherits(d, "try-error")) {
-		writeLines(s, fscript)
-		message(fscript)
-		return(invisible(fscript))
-	}
-	
-	wf <- get_filenames(d)
-
 	s <- gsub("_filename_", wf, s)
-
-	r <- read_files(d)
 	s <- gsub("_read_", r, s)
 
-	can_read <- grepl("\\.xlsx$|\\.xls$|\\.csv$|\\.dta|\\.rds", ff)
-	
-	if (!any(can_read)) {
-		writeLines(s, fscript)
-		message(fscript)
-		return(invisible(fscript))
-	}
-	d$other <- NULL
-	
-	nms <- NULL
-	if (!is.null(d$xls)) {
-		for (i in 1:length(d$xls)) {
-			if (length(d$xls[[i]]) == 1) {
-				nms <- c(nms, match_names(d$xls[[i]][[1]], i))
-			} else {
-				for (j in 1:length(d$xls[[i]])) {
-					nms <- c(nms, match_names(d$xls[[i]][[j]], paste0(i, letters[j])))
-				}
-			}
+	if (!use_rejected) {
+		if (is.null(nms)) {
+			s <- gsub("_replacements_", "", s)
+		} else {
+			s <- gsub("_replacements_", paste(nms, collapse="\n\n"), s)
 		}
-	}
-	if (!is.null(d$csv)) {
-		for (i in 1:length(d$csv)) {
-			nms <- c(nms, match_names(d$csv[[i]], i))
-		}
-	}
-	if (!is.null(d$dta)) {
-		for (i in 1:length(d$dta)) {
-			nms <- c(nms, match_names(d$dta[[i]], i))
-		}
-	}
-	
-	
-	if (is.null(nms)) {
-		s <- gsub("_replacements_", "", s)
-	} else {
-		nms <- paste(nms, collapse="\n\n")
-		s <- gsub("_replacements_", nms, s)	
 	}
 
-	#trms <- vocal::accepted_variables()	
-	#trms <- trms[!(trms$group %in% c("all", "metadata")), "name"]
-	
-	
+	if (use_rejected) {
+		hdr <- c(
+			"#",
+			"# --- carobiner::draft() wrote this under scripts/_AI/_rejected/ (review here, then move manually) ---"
+		)
+		for (rr in reject_reasons) {
+			hdr <- c(hdr, paste("# Reason:", rr))
+		}
+		hdr <- c(hdr, "# After review: move to scripts/<group>/ if you complete it, or to scripts/_rejected/ if permanently dropped.", "#")
+		hdr <- c(hdr, "# carob_script() ends with return(FALSE): nothing left to auto-generate after data reads.", "#")
+		s <- c(hdr, s)
+	}
+
+	fscript <- if (use_rejected) {
+		file.path(path, "scripts", "_AI", "_rejected", paste0(did, ".R"))
+	} else {
+		file.path(path, "scripts", "_draft", group, paste0(did, ".R"))
+	}
+
+	if (file.exists(fscript) && (!overwrite)) {
+		stop(paste(fscript, "exists. Use 'overwrite=TRUE' to overwrite it"))
+	}
+	dir.create(dirname(fscript), FALSE, TRUE)
 	writeLines(s, fscript)
 	message(fscript)
 	invisible(fscript)

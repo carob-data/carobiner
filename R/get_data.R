@@ -13,9 +13,30 @@ read.RData <- function(f) {
 
 filter_files <- function(x) { 
 	if (is.null(x)) return(x)
-	x <- grep("\\.json$|ok\\.txt$|\\.pdf$|_files.txt$|\\.zip$|\\.7z$|\\.gz$|\\.doc$|\\.docx$|/old_", x, value=TRUE, invert=TRUE)
+	x <- grep("\\.json$|ok\\.txt$|\\.pdf$|_files.txt$|\\.zip$|\\.7z$|\\.gz$|\\.tar$|\\.tgz$|\\.tar\\.gz$|\\.doc$|\\.docx$|/old_", x, value=TRUE, invert=TRUE)
 	# remove opened excel files
 	grep("/~$", x, fixed=TRUE, invert=TRUE, value=TRUE)
+}
+
+
+## Nested Dataverse-style exports: subfolders with many .json files besides the dataset descriptor.
+needs_recursive_json_bundle <- function(raw_path, simple_uri, ff_for_check) {
+	if (!dir.exists(raw_path)) {
+		return(FALSE)
+	}
+	deep_json <- list.files(raw_path, pattern = "\\.json$", full.names = TRUE, recursive = TRUE, ignore.case = TRUE)
+	if (length(deep_json) < 1) {
+		return(FALSE)
+	}
+	meta_bn <- tolower(c(paste0(simple_uri, ".json"), "metadata.json"))
+	bn <- tolower(basename(deep_json))
+	atypical_json <- any(!(bn %in% meta_bn))
+	subdirs <- list.dirs(raw_path, full.names = FALSE, recursive = FALSE)
+	subdirs <- subdirs[nzchar(subdirs)]
+	has_subdirs <- length(subdirs) > 0
+	tabular <- any(grepl("\\.(csv|rds|dta|xlsx|xls)$", ff_for_check, ignore.case = TRUE))
+	empty_ff <- length(ff_for_check) < 1
+	empty_ff || (!tabular && (atypical_json || has_subdirs))
 }
 
 
@@ -142,7 +163,7 @@ check_package_version <- function(path) {
 	}
 }
 
-get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE, protocol="", username=NULL, password=NULL) {
+get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE, auto_json_bundle=TRUE, protocol="", username=NULL, password=NULL) {
 
 	check_package_version(path)
 
@@ -165,6 +186,7 @@ get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, 
 		file_downloads(files, dpath, cache)
 	} else {
 		set_pwds(path)
+		suppress_filter <- FALSE
 		if (protocol == "LSMS") {
 			dpath <- file.path(dpath, uname)
 			if (is.null(password) || is.null(username)) {
@@ -175,11 +197,21 @@ get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, 
 			}
 		} else {
 			ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=recursive, filter=FALSE, username, password)
+			raw_path <- file.path(dpath, uname)
+			if (!isTRUE(length(ff) > 0)) {
+				ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=TRUE, filter=FALSE, username, password)
+				suppress_filter <- TRUE
+			} else if (isTRUE(auto_json_bundle) && needs_recursive_json_bundle(raw_path, uname, filter_files(ff))) {
+				ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=TRUE, filter=FALSE, username, password)
+				suppress_filter <- TRUE
+			}
 		}
 		if (!isTRUE(length(ff) > 0)) {
 			stop("no files found")
 		}
-		if (filter) ff <- filter_files(ff)
+		if (filter && !suppress_filter) {
+			ff <- filter_files(ff)
+		}
 		ff
 	}
 }
