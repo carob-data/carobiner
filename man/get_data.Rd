@@ -32,3 +32,7 @@ get_data(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE,
 \value{
 character
 }
+
+\details{
+When downloading (non-LSMS), guestbook fields for Dataverse are set via \code{options("yuri.dataverse.guestbook")}: package load fills empty fields with built-in defaults; each \code{get_data} call then overlays entries from \code{passwords.R} in \code{path}, if present, under the list key \code{HARVARD}: \code{username} (maps to name), \code{email}, \code{institute} or \code{institution}, and optional \code{password} (Dataverse API token, \verb{DATAVERSE_API_TOKEN}).
+}
