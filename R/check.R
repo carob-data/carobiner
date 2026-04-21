@@ -310,8 +310,8 @@ carob_vocabulary <- function(x=NULL, save=FALSE, add=TRUE, reset=FALSE) {
 
 check_terms <- function(metadata=NULL, records=NULL, longrecs=NULL, wth=NULL, soil=NULL, group="", check="all") {
 
-	check_packages("yuri", "0.2-7")
-	check_packages("vocal", "0.3-6")
+	check_packages("yuri", "0.2-9")
+	check_packages("vocal", "0.3-7")
 	
 	voc <- carob_vocabulary()
 	vocal::set_vocabulary(voc)

@@ -2,18 +2,18 @@ Package: carobiner
 Type: Package
 Title: Standardizing agricultural research data 
 Description: A collection functions to support the "Carob" project to standardize and aggregate open agricultural research data trough reproducible workflows. See https://carob-data.org and https://github.com/carob-data/carob for details.
-Version: 0.7-3
+Version: 0.7-4
 Depends: R (>= 4.1.0)
-Imports: readxl, writexl, httr, data.table, jsonlite, xml2, rappdirs, yuri (>= 0.2-7), vocal (>= 0.3-6)
+Imports: readxl, writexl, httr, data.table, jsonlite, xml2, rappdirs, yuri (>= 0.2-9), vocal (>= 0.3-7)
 Remotes: github::carob-data/yuri, github::controvoc/vocal
 Suggests: terra, revtools, stringr, rmarkdown, kableExtra, summarytools, haven
-Date: 2026-03-09
+Date: 2026-04-21
 Encoding: UTF-8
 Authors@R: c(
 	person("Robert J.", "Hijmans", role = c("cre", "aut"),  email = "r.hijmans@gmail.com"),
 	person("Eduardo", "Bendito Garcia", role = "ctb"),
-	person("Effie", "Ochieng'", role = "ctb"),
-	person("Cedric", "Ngakou", role = "ctb")	
+	person("Cedric", "Ngakou", role = "ctb"),	
+	person("Effie", "Ochieng'", role = "ctb")
 	)
 Maintainer: Robert J. Hijmans <r.hijmans@gmail.com> 
 License: GPL (>=3)

@@ -163,7 +163,7 @@ check_package_version <- function(path) {
 	}
 }
 
-get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE, auto_json_bundle=TRUE, protocol="", username=NULL, password=NULL) {
+get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE, auto_json_bundle=TRUE, protocol="") {
 
 	check_package_version(path)
 
@@ -189,20 +189,16 @@ get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, 
 		suppress_filter <- FALSE
 		if (protocol == "LSMS") {
 			dpath <- file.path(dpath, uname)
-			if (is.null(password) || is.null(username)) {
-				p <- usr_pwd(path, "LSMS")
-				ff <- yuri:::get_LSMS(uri, dpath, p$username, p$password, cache=cache)
-			} else {
-				ff <- yuri:::get_LSMS(uri, dpath, username, password, cache=cache)
-			}
+			p <- usr_pwd(path, "LSMS")
+			ff <- yuri:::get_LSMS(uri, dpath, p$username, p$password, cache=cache)
 		} else {
-			ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=recursive, filter=FALSE, username, password)
+			ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=recursive, filter=FALSE)
 			raw_path <- file.path(dpath, uname)
 			if (!isTRUE(length(ff) > 0)) {
-				ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=TRUE, filter=FALSE, username, password)
+				ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=TRUE, filter=FALSE)
 				suppress_filter <- TRUE
 			} else if (isTRUE(auto_json_bundle) && needs_recursive_json_bundle(raw_path, uname, filter_files(ff))) {
-				ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=TRUE, filter=FALSE, username, password)
+				ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=TRUE, filter=FALSE)
 				suppress_filter <- TRUE
 			}
 		}

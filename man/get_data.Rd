@@ -10,11 +10,11 @@ Download a data set
 Download the files associated with a URI. 
 }
 
-
 \usage{
-get_data(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE, auto_json_bundle=TRUE, protocol="", username, password)
+get_data(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE, auto_json_bundle=TRUE, protocol="")
 }
  
+
 \arguments{
   \item{uri}{character. The URI of a dataset}
   \item{path}{character. The path to the Carob repo}
@@ -26,9 +26,7 @@ get_data(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE,
   \item{filter}{logical. if \code{TRUE} files that probably do not have the primary data are filtered out (files ending on .pdf, .doc(x), .json)}
   \item{auto_json_bundle}{logical. if \code{TRUE} (default), when the shallow file list has no tabular files but the raw folder has subdirectories or \code{.json} files other than the dataset descriptor (\code{<dataset_id>.json}) and \code{metadata.json}, \code{get_data} re-lists with \code{recursive=TRUE} and skips filtering so those JSON paths stay in the returned vector (Dataverse-style nested \code{Dataset/*.json} bundles).}
 
-  \item{protocol}{character}
-  \item{username}{character}
-  \item{password}{character}
+  \item{protocol}{character; use \code{"LSMS"} for LSMS (\code{\link{usr_pwd}}) downloads}
 }
 
 \value{
