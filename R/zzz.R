@@ -25,6 +25,9 @@
 					cur$name <- as.character(h$username)[1L]
 				}
 				if (!is.null(h$email) && nzchar(as.character(h$email)[1L])) {
+					# Validation is deferred to the actual guestbook submission
+					# so that cached datasets (which never POST a guestbook
+					# response) don't error or warn on a malformed entry.
 					cur$email <- as.character(h$email)[1L]
 				}
 				ist <- h$institute
