@@ -2,12 +2,21 @@
 .carob_environment <- new.env(parent=emptyenv())
 
 
-check_packages <- function(name, version) {
-	if (utils::packageVersion(name) < version) {
-		if (name == "vocal") {
-			stop(paste0('please update package ', name, " with:\n   remotes::install.github('controvoc/", name, "')"))
-		} else {
-			stop(paste0('please update package ', name, " with:\n   remotes::install.github('carob-data/", name, "')"))		
+check_packages <- function(pkgs) {
+	imp <- utils::packageDescription("carobiner")$Imports
+	parts <- trimws(unlist(strsplit(imp, ",")))
+	nms <- trimws(sub("\\(.*", "", parts))
+	vers <- rep(NA_character_, length(parts))
+	has_v <- grepl("\\(\\s*>=\\s*([^)]+)\\)", parts)
+	vers[has_v] <- trimws(sub(".*\\(\\s*>=\\s*([^)]+)\\).*", "\\1", parts[has_v]))
+	for (pkg in pkgs) {
+		i <- which(nms == pkg)
+		if (length(i) == 0) next
+		v <- vers[i]
+		if (is.na(v)) next
+		if (utils::packageVersion(pkg) < v) {
+			repo <- if (pkg == "vocal") "controvoc" else "carob-data"
+			stop(paste0('please update package ', pkg, " with:\n   remotes::install.github('", repo, "/", pkg, "')"))
 		}
 	}
 }
@@ -310,8 +319,7 @@ carob_vocabulary <- function(x=NULL, save=FALSE, add=TRUE, reset=FALSE) {
 
 check_terms <- function(metadata=NULL, records=NULL, longrecs=NULL, wth=NULL, soil=NULL, group="", check="all") {
 
-	check_packages("yuri", "0.3-0")
-	check_packages("vocal", "0.3-7")
+	check_packages(c("yuri", "vocal"))
 	
 	voc <- carob_vocabulary()
 	vocal::set_vocabulary(voc)
