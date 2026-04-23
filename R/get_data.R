@@ -125,31 +125,23 @@ usr_pwd <- function(path, protocol) {
 }
 
 
-set_pwds <- function(path, protocol) {
-	loadNamespace("yuri")	
-	if (is.null(.carob_environment$passwords)) {
+set_pwds <- function(path, protocol = NULL) {
+	loadNamespace("yuri")
+	if (!is.null(.carob_environment$passwords)) return(invisible(NULL))
+
+	p <- list()
+	if (!is.null(path) && nzchar(path)) {
 		fpwd <- file.path(path, "passwords.R")
 		if (file.exists(fpwd)) {
 			pwds <- function(){NULL}
 			source(fpwd, local=TRUE)
-			p <- pwds()
-			if (is.null(p)) {
-				.carob_environment$passwords <- ""
-			} else {
-				# yuri::authenticate() only accepts DRYAD / LSMS (service, username, password);
-				# other keys (e.g. HARVARD for Dataverse guestbook) must not be rbind with these.
-				p <- p[intersect(names(p), c("DRYAD", "LSMS"))]
-				if (length(p) == 0L) {
-					.carob_environment$passwords <- ""
-				} else {
-					p <- do.call(rbind, p)
-					p <- data.frame(service=rownames(p), p)
-					yuri::authenticate(p)
-					.carob_environment$passwords <- p[,1]
-				}
-			}
+			pp <- pwds()
+			if (!is.null(pp)) p <- lapply(as.list(pp), as.list)
 		}
 	}
+	if (length(p) > 0L) yuri::authenticate(p)
+	.carob_environment$passwords <- names(p)
+	invisible(NULL)
 }
 
 
@@ -193,7 +185,6 @@ get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, 
 		file_downloads(files, dpath, cache)
 	} else {
 		set_pwds(path)
-		.carobiner_default_dataverse_guestbook(path)
 		suppress_filter <- FALSE
 		if (protocol == "LSMS") {
 			dpath <- file.path(dpath, uname)

@@ -2,7 +2,7 @@
 .carob_environment <- new.env(parent=emptyenv())
 
 
-check_packages <- function(pkgs) {
+check_package_versions <- function(pkgs) {
 	imp <- utils::packageDescription("carobiner")$Imports
 	parts <- trimws(unlist(strsplit(imp, ",")))
 	nms <- trimws(sub("\\(.*", "", parts))
@@ -319,7 +319,6 @@ carob_vocabulary <- function(x=NULL, save=FALSE, add=TRUE, reset=FALSE) {
 
 check_terms <- function(metadata=NULL, records=NULL, longrecs=NULL, wth=NULL, soil=NULL, group="", check="all") {
 
-	check_packages(c("yuri", "vocal"))
 	
 	voc <- carob_vocabulary()
 	vocal::set_vocabulary(voc)
