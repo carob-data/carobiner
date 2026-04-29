@@ -145,7 +145,7 @@ set_pwds <- function(path, protocol = NULL) {
 }
 
 
-check_package_version <- function(path) {
+check_carobiner_version <- function(path) {
 	if (!isTRUE(.carob_environment$version_checked)) {
 		fv <- file.path(path, "misc/version")
 		if (file.exists(fv)) {
@@ -160,11 +160,12 @@ check_package_version <- function(path) {
 			.carob_environment$version_checked <- TRUE
 		}
 	}
+	TRUE
 }
 
 get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE, auto_json_bundle=TRUE, protocol="") {
 
-	check_package_version(path)
+	check_carobiner_version(path)
 
 	if (is.null(path)) {
 		dpath <- file.path(tempdir(), "carob", fsep="/")
