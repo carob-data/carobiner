@@ -70,12 +70,9 @@ check_cropyield <- function(x, answ) {
 	x <- stats::na.omit(merge(x, trms, by=1))
 	i <- x$yield > x$max_yield
 	if (any(i)) {
-		crops <- unique(x$crop[i])
-		if (length(crops) == 1) {
-			bad <- paste0(crops, ": ", max(x$yield, na.rm=TRUE))
-		} else {
-			bad <- paste(crops, collapse=", ")
-		}
+		xi <- x[i, ]
+		mx <- stats::aggregate(xi[, "yield", drop=FALSE], xi[, "crop", drop=FALSE], max, na.rm=TRUE)
+		bad <- paste(paste0(mx$crop, ": ", mx$yield), collapse=", ")
 		answ[nrow(answ)+1, ] <- c("high crop yield", bad)	
 	}
 	#check_outliers_iqr(x, "yield", TRUE)
@@ -239,9 +236,9 @@ check_metadata <- function(x, answ) {
 
 
 get_groupvars <- function(group) {		
-	vars <- c("all", "location", "crop", "soil", "weather")
+	vars <- c("all", "location", "crop", "soil", "weather", "survey")
 	if (grepl("maize", group)) vars <- c(vars, "maize")
-	if (grepl("survey", group)) vars <- c(vars, "survey")
+	#if (grepl("survey", group)) vars <- c(vars, "survey")
 	if (grepl("soil", group)) vars <- vars[vars != "crop"]
 	vars
 }
