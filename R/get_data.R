@@ -110,6 +110,31 @@ file_downloads <- function(files, path, cache) {
 }
 
 
+# DATAVERSE = list(name = ..., answers = c("a", "b", "c"))
+# degrades to a named character vector whose names get auto-numbered
+.coalesce_indexed_answers <- function(p) {
+	dv <- p[["DATAVERSE"]]
+	if (!is.list(dv) || length(dv) == 0L) return(p)
+	nms <- names(dv)
+	if (is.null(nms)) return(p)
+	m <- regmatches(nms, regexec("^answers([0-9]+)$", nms))
+	idx <- vapply(m, function(x) if (length(x) == 2L) as.integer(x[2L]) else NA_integer_, integer(1))
+	hits <- !is.na(idx)
+	if (!any(hits)) return(p)
+	ord <- order(idx[hits])
+	vals <- unlist(lapply(which(hits)[ord],	function(i) as.character(dv[[i]])[1L]), use.names = FALSE)
+	dv <- dv[!hits]
+	if (is.null(dv$answers)) {
+		dv$answers <- vals
+	} else {
+		existing <- as.character(dv$answers)
+		dv$answers <- c(existing, vals)
+	}
+	p[["DATAVERSE"]] <- dv
+	p
+}
+
+
 usr_pwd <- function(path, protocol) {
 	fpwd <- file.path(path, "passwords.R")
 	if (file.exists(fpwd)) {
@@ -127,20 +152,25 @@ usr_pwd <- function(path, protocol) {
 
 set_pwds <- function(path, protocol = NULL) {
 	loadNamespace("yuri")
-	if (!is.null(.carob_environment$passwords)) return(invisible(NULL))
+
+	fpwd <- if (!is.null(path) && nzchar(path)) file.path(path, "passwords.R") else NA_character_
+	mtime <- if (!is.na(fpwd) && file.exists(fpwd)) file.info(fpwd)$mtime else NA
+	# Cache key is the (file path, mtime) pair so edits to passwords.R during
+	# the same R session are picked up automatically (no need to restart R).
+	key <- paste(fpwd, format(mtime, "%Y-%m-%d %H:%M:%OS6"))
+	if (isTRUE(.carob_environment$passwords_key == key)) return(invisible(NULL))
 
 	p <- list()
-	if (!is.null(path) && nzchar(path)) {
-		fpwd <- file.path(path, "passwords.R")
-		if (file.exists(fpwd)) {
-			pwds <- function(){NULL}
-			source(fpwd, local=TRUE)
-			pp <- pwds()
-			if (!is.null(pp)) p <- lapply(as.list(pp), as.list)
-		}
+	if (!is.na(fpwd) && file.exists(fpwd)) {
+		pwds <- function(){NULL}
+		source(fpwd, local=TRUE)
+		pp <- pwds()
+		if (!is.null(pp)) p <- lapply(as.list(pp), as.list)
 	}
+	p <- .coalesce_indexed_answers(p)
 	if (length(p) > 0L) yuri::authenticate(p)
 	.carob_environment$passwords <- names(p)
+	.carob_environment$passwords_key <- key
 	invisible(NULL)
 }
 
