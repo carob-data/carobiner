@@ -236,7 +236,7 @@ check_metadata <- function(x, answ) {
 
 
 get_groupvars <- function(group) {		
-	vars <- c("general", "location", "crop", "soil", "weather", "survey", "management")
+	vars <- c("general", "location", "crop", "soil", "weather", "survey", "management", "economic")
 	if (grepl("maize", group)) vars <- c(vars, "maize")
 	if (grepl("soil", group)) vars <- vars[vars != "crop"]
 	vars
