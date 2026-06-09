@@ -157,7 +157,12 @@ set_pwds <- function(path, protocol = NULL) {
 	mtime <- if (!is.na(fpwd) && file.exists(fpwd)) file.info(fpwd)$mtime else NA
 	# Cache key is the (file path, mtime) pair so edits to passwords.R during
 	# the same R session are picked up automatically (no need to restart R).
-	key <- paste(fpwd, format(mtime, "%Y-%m-%d %H:%M:%OS6"))
+	mtime_str <- if (inherits(mtime, "POSIXt")) {
+		format(mtime, "%Y-%m-%d %H:%M:%OS6")
+	} else {
+		"NA"
+	}
+	key <- paste(fpwd, mtime_str)
 	if (isTRUE(.carob_environment$passwords_key == key)) return(invisible(NULL))
 
 	p <- list()
