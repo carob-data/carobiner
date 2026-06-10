@@ -64,7 +64,14 @@ zip_clean <- function(path) {
 }
 
 
-combine_compiled <- function(path, zip=TRUE, ...) {
+## compilations are versioned by "vyearmonth" 
+carob_version <- function() {
+	paste0("v", gsub("-", "", substr(Sys.time(), 1, 7)))
+}
+
+combine_compiled <- function(path, zip=TRUE, excel=FALSE, ...) {
+
+	cvers <- carob_version()
 
 	fff <- list.files(file.path(path, "data", "clean"), pattern=".csv$", recursive=TRUE)
 	grps <- unique(sapply(strsplit(fff, "/"), function(i) ifelse(length(i) > 1, i[1], "doi")))
@@ -85,9 +92,10 @@ combine_compiled <- function(path, zip=TRUE, ...) {
 	ff <- ff[-i]
 	cterms <- unique(lapply(gf, utils::read.csv))
 	cterms <- do.call(bindr, cterms)
-	fterms <- file.path(cpath, paste0("carob_all_terms.csv"))
+	fterms <- file.path(cpath, paste0("carob_all_terms_", cvers, ".csv"))
 	data.table::fwrite(cterms, fterms, row.names=FALSE)
-	fg <- c("metadata", "warnings", "long", "")
+	fg <- c("_metadata", "_warnings", "_long", "")
+	fg <- paste0(cvers, fg)
 
 	for (add in c("-cc", "")) {
 		j <- grepl(paste0("-cc.csv$"), ff)		
@@ -111,7 +119,6 @@ combine_compiled <- function(path, zip=TRUE, ...) {
 			fcsv <- c(fcsv, outf)
 		}
 
-		excel=FALSE
 		if (excel) {
 			fxls <- gsub(".csv$", ".xlsx", outf)
 			d$terms = cterms
@@ -130,6 +137,9 @@ combine_compiled <- function(path, zip=TRUE, ...) {
 
 
 compile_carob <- function(path, group="", split_license=FALSE, zip=FALSE, excel=FALSE, cache=TRUE) {
+
+	cvers <- carob_version()
+	
 	warn <- options("warn")
 	if (warn$warn < 1) {
 		on.exit(options(warn=warn$warn))
@@ -138,10 +148,8 @@ compile_carob <- function(path, group="", split_license=FALSE, zip=FALSE, excel=
 	dir.create(file.path(path, "data", "compiled"), showWarnings = FALSE, recursive = TRUE)
 	fff <- list.files(file.path(path, "data", "clean", group), pattern=".csv$", recursive=TRUE)
 
-	voc <- carob_vocabulary()
-	vocal::set_vocabulary(voc)
-	vocal::check_vocabulary(quiet=FALSE)
-
+	vocal::set_vocabulary(carob_vocabulary(), quiet=TRUE)
+	#vocal::check_vocabulary(quiet=TRUE)
 
 	if (group == "") {
 		grps <- unique(sapply(strsplit(fff, "/"), function(i) ifelse(length(i) > 1, i[1], "doi")))
@@ -164,7 +172,7 @@ compile_carob <- function(path, group="", split_license=FALSE, zip=FALSE, excel=
 
 	for (grp in grps) {
 
-		wgroup <- ifelse(grp == "doi", "", paste0("_", grp))
+		wgroup <- ifelse(grp == "doi", "", paste0("_", grp, "_", cvers))
 
 		ff <- file.path(path, "data", "clean", fff[fgrp == grp])
 		outft <- file.path(path, "data", "compiled", paste0("carob", wgroup, "_terms.csv"))
@@ -271,9 +279,8 @@ compile_carob <- function(path, group="", split_license=FALSE, zip=FALSE, excel=
 		}
 		
 		ret <- c(ret, outmf, outff)
+		utils::flush.console()
 	}
-	utils::flush.console()
-	
 	ret
 }
 
