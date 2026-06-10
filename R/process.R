@@ -69,7 +69,7 @@ carob_version <- function() {
 	paste0("v", gsub("-", "", substr(Sys.time(), 1, 7)))
 }
 
-combine_compiled <- function(path, zip=TRUE, excel=FALSE, ...) {
+combine_compiled <- function(path, zip=TRUE, ...) {
 
 	cvers <- carob_version()
 
@@ -119,13 +119,14 @@ combine_compiled <- function(path, zip=TRUE, excel=FALSE, ...) {
 			fcsv <- c(fcsv, outf)
 		}
 
-		if (excel) {
-			fxls <- gsub(".csv$", ".xlsx", outf)
-			d$terms = cterms
-			d <- d[c(1,5,4,3,2)]
-			writexl::write_xlsx(d, fxls)
-			rm(d)
-		}
+# does not fit into excel anymore
+#		if (excel) {
+#			fxls <- gsub(".csv$", ".xlsx", outf)
+#			d$terms = cterms
+#			d <- d[c(1,5,4,3,2)]
+#			writexl::write_xlsx(d, fxls)
+#			rm(d)
+#		}
 
 		if (zip) {
 			fzip <- gsub("\\.csv$", ".zip", outf)
