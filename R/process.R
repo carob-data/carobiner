@@ -66,7 +66,8 @@ zip_clean <- function(path) {
 
 ## compilations are versioned by "vyearmonth" 
 carob_version <- function() {
-	paste0("v", gsub("-", "", substr(Sys.time(), 1, 7)))
+#	paste0("v", gsub("-", "", substr(Sys.time(), 1, 7)))
+	"latest"
 }
 
 combine_compiled <- function(path, zip=TRUE, ...) {
