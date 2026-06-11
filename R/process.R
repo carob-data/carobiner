@@ -64,15 +64,28 @@ zip_clean <- function(path) {
 }
 
 
-## compilations are versioned by "vyearmonth" 
-carob_version <- function() {
-#	paste0("v", gsub("-", "", substr(Sys.time(), 1, 7)))
-	"latest"
+## compilations are versioned by "yearmonth" for each month in which the file changed
+make_version <- function(path) {
+	cpath <- file.path(path, "data", "compiled")
+	ff <- list.files(cpath, pattern="latest", full.names=TRUE)
+	fmonth <- gsub("-", "", substr(file.info(ff)$mtime, 1, 7))
+	thismonth <- gsub("-", "", substr(Sys.time(), 1, 7))
+	i <- thismonth > fmonth
+	if (any(i)) {
+		ff <- ff[i]
+		fm <- fmonth[i]
+		d <- cbind(fm, ff)
+		vf <- apply(d, 1, \(x) gsub("_latest", paste0("_", x[1]), x[2]))
+		j <- !file.exists(vf)
+		if (any(j)) {
+			ff <- ff[j]
+			vf <- vf[j]
+			file.rename(ff, vf)
+		}
+	}
 }
 
 combine_compiled <- function(path, zip=TRUE, ...) {
-
-	cvers <- carob_version()
 
 	fff <- list.files(file.path(path, "data", "clean"), pattern=".csv$", recursive=TRUE)
 	grps <- unique(sapply(strsplit(fff, "/"), function(i) ifelse(length(i) > 1, i[1], "doi")))
@@ -93,10 +106,10 @@ combine_compiled <- function(path, zip=TRUE, ...) {
 	ff <- ff[-i]
 	cterms <- unique(lapply(gf, utils::read.csv))
 	cterms <- do.call(bindr, cterms)
-	fterms <- file.path(cpath, paste0("carob_all_terms_", cvers, ".csv"))
+	fterms <- file.path(cpath, paste0("carob_all_terms_latest.csv"))
 	data.table::fwrite(cterms, fterms, row.names=FALSE)
 	fg <- c("_metadata", "_warnings", "_long", "")
-	fg <- paste0(cvers, fg)
+	fg <- paste0("latest", fg)
 
 	for (add in c("-cc", "")) {
 		j <- grepl(paste0("-cc.csv$"), ff)		
@@ -140,8 +153,8 @@ combine_compiled <- function(path, zip=TRUE, ...) {
 
 compile_carob <- function(path, group="", split_license=FALSE, zip=FALSE, excel=FALSE, cache=TRUE) {
 
-	cvers <- carob_version()
-	
+	make_version(path)
+
 	warn <- options("warn")
 	if (warn$warn < 1) {
 		on.exit(options(warn=warn$warn))
@@ -174,7 +187,7 @@ compile_carob <- function(path, group="", split_license=FALSE, zip=FALSE, excel=
 
 	for (grp in grps) {
 
-		wgroup <- ifelse(grp == "doi", "", paste0("_", grp, "_", cvers))
+		wgroup <- ifelse(grp == "doi", "", paste0("_", grp, "_latest"))
 
 		ff <- file.path(path, "data", "clean", fff[fgrp == grp])
 		outft <- file.path(path, "data", "compiled", paste0("carob", wgroup, "_terms.csv"))
