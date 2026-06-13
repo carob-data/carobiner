@@ -209,7 +209,7 @@ check_combined <- function(x, trms, answ, required=TRUE) {
 }
 
 check_weather <- function(x, answ) {
-	trms <- vocal::accepted_variables(c("all", "location", "weather"))	
+	trms <- vocal::accepted_variables(c("general", "location", "weather"))	
 	answ <- check_combined(x, trms, answ)
 	if (is.null(x$date)) {
 		answ[nrow(answ)+1, ] <- c("weather", "variable 'date' is missing")			
@@ -218,7 +218,7 @@ check_weather <- function(x, answ) {
 }
 
 check_soil <- function(x, answ) {
-	trms <- vocal::accepted_variables(c("all", "soil"))
+	trms <- vocal::accepted_variables(c("general", "soil"))
 	check_combined(x, trms, answ)
 }
 
