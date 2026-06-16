@@ -19,7 +19,7 @@ on_github <- function(uri=NULL) {
 	d <- all_github_scripts()
 	if (!is.null(uri)) {
 		uri <- yuri::simpleURI(uri)
-		i <- stats::na.omit(match(uri, d$dataset))
+		i <- stats::na.omit(match(tolower(uri), tolower(d$dataset)))
 		if (length(i) == 0) return("not found")
 		return(d[i,])
 	} 
