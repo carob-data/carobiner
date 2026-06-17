@@ -48,7 +48,7 @@ get_metadata <- function(uri, path, group, major, minor, ...) {
 	dataset_id <- yuri::simpleURI(uri)
 	jpath <- file.path(path, "data", "raw", group)
 	m <- yuri::extract_metadata(uri, jpath)
-	m$group <- group
+	m$carob_group <- group
 	
 	d <- data.frame(list(...))
 	

@@ -36,7 +36,6 @@ _description_
 		data_organization = "_dataorg_",
 		publication = _pub_,
 		project = NA,
-		carob_date = "_today_",
 		# if available report the experimental or survey design
 		design = _design_,
 		
@@ -51,13 +50,16 @@ _description_
 		# that describe management for all treatments or other observations that were not related to the aim of 
 		# the trial (e.g. the presence of a disease).
 		response_vars = "", 
-		carob_contributor = "Your Name",
-		# The percentage of relevant variables that have been standardized (between 0 and 100%) 
-		completion = 0,	
-		# The number of hours spent creating this script
-		effort = -1,	
+
 		# notes for the end-user
-		notes = ""
+		notes = "",
+
+		carob_contributor = "Your Name",
+		carob_date = "_today_",
+		# The percentage of relevant variables that have been standardized (between 0 and 100%) 
+		carob_completion = 0,	
+		# The number of hours spent creating this script
+		carob_effort = -1
 	)
 	
 
