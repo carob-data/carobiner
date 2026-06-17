@@ -3,6 +3,7 @@
 write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, var_meta=NULL, options=NULL) {
 
 	group <- metadata$carob_group
+#	if (length(group) == 0 || is.na(group)) group <- metadata$group
 #	check_group(group)
 	cleanuri <- metadata$dataset_id
 	stopifnot(nrow(metadata) == 1)

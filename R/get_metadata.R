@@ -43,13 +43,16 @@ checkVersion <- function(vmeta, major, minor, fpath) {
 
 get_metadata <- function(uri, path, group, major, minor, ...) {
 	if (isTRUE(grepl("doi:10.48529", uri))) {
-		return(yuri:::LSMS_metadata(uri, group, path, major, minor, ...))
+		m <- yuri:::LSMS_metadata(uri, group, path, major, minor, ...)
+		m$carob_group=group
+		m$treatment_vars = "none"
+		m$response_vars = "none"
+		return(m)
 	}
 	dataset_id <- yuri::simpleURI(uri)
 	jpath <- file.path(path, "data", "raw", group)
 	m <- yuri::extract_metadata(uri, jpath)
 	m$carob_group <- group
-	
 	d <- data.frame(list(...))
 	
 	draft <- isTRUE(d$draft)	
@@ -64,6 +67,7 @@ get_metadata <- function(uri, path, group, major, minor, ...) {
 	} else if (nrow(d) > 1) {
 		warning("additional arguments must all have length 1")
 	}
+
 	m
 }
 

@@ -226,7 +226,6 @@ check_soil <- function(x, answ) {
 
 check_metadata <- function(x, answ) {
 	trms <- vocal::accepted_variables("metadata")
-	x[is.na(x)] <- as.character(NA)
 	answ <- check_combined(x, trms, answ)
 	if (grepl("http", x$uri)) {
 		answ[nrow(answ)+1, ] <- c("uri", "http in uri")
