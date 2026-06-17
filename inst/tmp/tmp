@@ -54,6 +54,8 @@ _description_
 		carob_contributor = "Your Name",
 		# The percentage of relevant variables that have been standardized (between 0 and 100%) 
 		completion = 0,	
+		# The number of hours spent creating this script
+		effort = -1,	
 		# notes for the end-user
 		notes = ""
 	)
