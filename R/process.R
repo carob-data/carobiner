@@ -13,12 +13,13 @@ get_function <- function(name, path, group="") {
 sort_by_terms <- function(x, type, group) {
 	if (is.null(x)) return(x)
 	if (type == "metadata") {
-		trms <- vocal::accepted_variables("metadata")
+		trms <- vocal::accepted_variables(c("metadata", "carob-metadata"))
 	} else if (type == "weather") {
 		trms <- vocal::accepted_variables("weather")
 	} else {
-		vars <- get_groupvars(group)
-		trms <- vocal::accepted_variables(vars)
+		#vars <- get_groupvars(group)
+		#trms <- vocal::accepted_variables(vars)
+		trms <- vocal::accepted_variables()
 	}
 	trms <- trms$name[trms$name %in% names(x)]
 	x[, trms]
@@ -221,8 +222,9 @@ compile_carob <- function(path, group="", split_license=FALSE, zip=FALSE, excel=
 			have_warnings <- FALSE
 		}
 		
-		gvars <- get_groupvars(grp)
-		gterms <- vocal::accepted_variables(gvars)
+		#gvars <- get_groupvars(grp)
+		#
+		gterms <- vocal::accepted_variables()
 		gterms <- gterms[, c("name", "type", "unit", "description")]
 
 #		utils::write.csv(gterms, outft, row.names=FALSE)

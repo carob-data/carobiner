@@ -244,8 +244,7 @@ check_metadata <- function(x, answ) {
 
 check_records <- function(answ, x, group, check="all", required=TRUE, dupid=TRUE) {
 	#vars <- get_groupvars(group)
-	trms <- vocal::accepted_variables()
-	trms <- trms[trms$group != "metadata", ]
+	trms <- vocal::accepted_variables(exclude=c("metadata", "carob-metadata"))
 	answ <- check_combined(x, trms, answ, required=required)
 
 	aw <- vocal::check_datespan(x, "planting_date", "harvest_date", smin=45, smax=366)
