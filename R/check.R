@@ -225,7 +225,7 @@ check_soil <- function(x, answ) {
 
 
 check_metadata <- function(x, answ) {
-	trms <- vocal::accepted_variables("metadata")
+	trms <- vocal::accepted_variables(c("metadata", "carob-metadata"))
 	answ <- check_combined(x, trms, answ)
 	if (grepl("http", x$uri)) {
 		answ[nrow(answ)+1, ] <- c("uri", "http in uri")
@@ -234,17 +234,18 @@ check_metadata <- function(x, answ) {
 }
 
 
-get_groupvars <- function(group) {		
-	vars <- c("general", "location", "crop", "soil", "weather", "survey", "management", "economic")
+.get_groupvars <- function(group) {		
+	vars <- c("general", "location", "crop", "livestock", "soil", "weather", "survey", "management", "economic", "emission")
 	if (grepl("maize", group)) vars <- c(vars, "maize")
-	if (grepl("soil", group)) vars <- vars[vars != "crop"]
+	#if (grepl("soil", group)) vars <- vars[vars != "crop"]
 	vars
 }
 
 
 check_records <- function(answ, x, group, check="all", required=TRUE, dupid=TRUE) {
-	vars <- get_groupvars(group)
-	trms <- vocal::accepted_variables(vars)
+	#vars <- get_groupvars(group)
+	trms <- vocal::accepted_variables()
+	trms <- trms[trms$group != "metadata", ]
 	answ <- check_combined(x, trms, answ, required=required)
 
 	aw <- vocal::check_datespan(x, "planting_date", "harvest_date", smin=45, smax=366)
