@@ -234,17 +234,15 @@ check_metadata <- function(x, answ) {
 }
 
 
-.get_groupvars <- function(group) {		
-	vars <- c("general", "location", "crop", "livestock", "soil", "weather", "survey", "management", "economic", "emission")
-	if (grepl("maize", group)) vars <- c(vars, "maize")
-	#if (grepl("soil", group)) vars <- vars[vars != "crop"]
-	vars
+get_groupvars <- function(group) {		
+	excl <- c("metadata", "carob-metadata")
+	if (grepl("soil", group)) excl <- c("crop", excl)
+	vocal::accepted_variables(exclude=excl)
 }
 
 
 check_records <- function(answ, x, group, check="all", required=TRUE, dupid=TRUE) {
-	#vars <- get_groupvars(group)
-	trms <- vocal::accepted_variables(exclude=c("metadata", "carob-metadata"))
+	trms <- get_groupvars(group)
 	answ <- check_combined(x, trms, answ, required=required)
 
 	aw <- vocal::check_datespan(x, "planting_date", "harvest_date", smin=45, smax=366)
