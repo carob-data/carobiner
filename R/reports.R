@@ -15,6 +15,171 @@ clean_up <- function(fin, fout) {
 }
 
 
+.report_rmd_dependencies <- function(records) {
+	needs <- c("rmarkdown", "kableExtra", "summarytools")
+	if ("longitude" %in% names(records) && "latitude" %in% names(records)) {
+		needs <- c(needs, "terra")
+	}
+	miss <- needs[!needs %in% rownames(utils::installed.packages())]
+	if (length(miss) > 0) {
+		utils::install.packages(miss, repos = "https://cloud.r-project.org")
+	}
+}
+
+
+.report_staging_id <- function(metadata) {
+	if (!is.null(metadata$uri) && length(metadata$uri) > 0 && !is.na(metadata$uri) && nzchar(trimws(metadata$uri))) {
+		return(yuri::simpleURI(metadata$uri))
+	}
+	if (!is.null(metadata$dataset_id) && length(metadata$dataset_id) > 0 && !is.na(metadata$dataset_id) && nzchar(trimws(metadata$dataset_id))) {
+		return(as.character(metadata$dataset_id))
+	}
+	paste0("report_", format(Sys.time(), "%Y%m%d_%H%M%S"))
+}
+
+
+.default_metadata_row <- function() {
+	data.frame(
+		title = "unknown",
+		carob_date = "unknown",
+		carob_contributor = "unknown",
+		license = "unknown",
+		data_citation = "",
+		publication = NA_character_,
+		treatment_vars = "",
+		uri = "",
+		carob_group = "",
+		dataset_id = "",
+		stringsAsFactors = FALSE
+	)
+}
+
+
+make_report <- function(records, metadata = NULL, issues = NULL, group = "",
+	path = NULL, file = NULL, check = "nogeo", open = FALSE) {
+	if (!requireNamespace("rmarkdown", quietly = TRUE)) {
+		stop("package 'rmarkdown' is required for make_report_rmd", call. = FALSE)
+	}
+	if (!is.data.frame(records)) {
+		records <- as.data.frame(records, stringsAsFactors = FALSE)
+	}
+	if (ncol(records) == 0) {
+		stop("records must have at least one column", call. = FALSE)
+	}
+
+	.report_rmd_dependencies(records)
+
+	if (is.null(metadata)) {
+		metadata <- .default_metadata_row()
+	} else if (is.data.frame(metadata)) {
+		if (nrow(metadata) == 0) metadata <- .default_metadata_row()
+		else metadata <- metadata[1, , drop = FALSE]
+	} else if (is.list(metadata)) {
+		metadata <- as.data.frame(metadata, stringsAsFactors = FALSE)
+		if (nrow(metadata) == 0) metadata <- .default_metadata_row()
+	} else {
+		stop("metadata must be a data.frame, list, or NULL", call. = FALSE)
+	}
+
+	if (nzchar(group)) {
+		metadata$carob_group <- group
+	} else if (!is.null(metadata$carob_group) && !is.na(metadata$carob_group) && nzchar(metadata$carob_group)) {
+		group <- as.character(metadata$carob_group)
+	}
+
+	staging_id <- .report_staging_id(metadata)
+	if (!is.null(metadata$uri) && !is.na(metadata$uri) && nzchar(trimws(metadata$uri))) {
+		uri <- trimws(as.character(metadata$uri))
+	} else {
+		uri <- ""
+	}
+	if (nzchar(uri)) metadata$uri <- uri
+	if (is.null(metadata$dataset_id) || is.na(metadata$dataset_id) || !nzchar(metadata$dataset_id)) {
+		metadata$dataset_id <- staging_id
+	}
+
+	vocal::set_vocabulary(carob_vocabulary(), quiet = TRUE)
+	vocal::check_vocabulary(delay = 4, quiet = FALSE)
+
+	if (is.null(issues)) {
+		issues <- check_terms(metadata = metadata, records = records, group = group, check = check)
+	}
+
+	if (is.null(path)) path <- tempdir()
+	path <- normalizePath(path, winslash = "/", mustWork = FALSE)
+	if (!dir.exists(path)) dir.create(path, recursive = TRUE, showWarnings = FALSE)
+
+	if (is.null(file)) {
+		file <- paste0(staging_id, "_report.html")
+	}
+	file <- basename(file)
+	if (!grepl("\\.html$", file, ignore.case = TRUE)) file <- paste0(file, ".html")
+	outf <- file.path(path, file)
+
+	staging <- tempfile("carob_report_", tmpdir = path)
+	dir.create(staging, showWarnings = FALSE)
+	on.exit(unlink(staging, recursive = TRUE), add = TRUE)
+
+	records_file <- file.path(staging, paste0(staging_id, ".csv"))
+	metadata_file <- file.path(staging, paste0(staging_id, "_meta.csv"))
+	messages_file <- ""
+	evaluation_file <- ""
+
+	utils::write.csv(records, records_file, row.names = FALSE)
+	utils::write.csv(metadata, metadata_file, row.names = FALSE)
+
+	if (!is.null(issues) && nrow(issues) > 0) {
+		messages_file <- file.path(staging, paste0(staging_id, "_messages.csv"))
+		utils::write.csv(issues[, c("check", "msg")], messages_file, row.names = FALSE)
+	}
+
+	if (nzchar(group)) {
+		eval <- try(evaluate_quality(records, group), silent = TRUE)
+		if (!inherits(eval, "try-error") && is.data.frame(eval) && nrow(eval) > 0) {
+			evaluation_file <- file.path(staging, paste0(staging_id, "_evaluation.csv"))
+			utils::write.csv(eval, evaluation_file, row.names = FALSE)
+		}
+	}
+
+	rmd <- system.file("reports/data_report.Rmd", package = "carobiner")
+	if (!file.exists(rmd)) {
+		stop("data_report.Rmd not found in carobiner", call. = FALSE)
+	}
+
+	fhtml <- file.path(staging, "data_report.html")
+	unlink(outf)
+	e <- try(
+		rmarkdown::render(
+			input = rmd,
+			output_format = "html_document",
+			output_file = "data_report.html",
+			output_dir = staging,
+			params = list(
+				group = group,
+				uri = uri,
+				records_file = records_file,
+				metadata_file = metadata_file,
+				messages_file = messages_file,
+				evaluation_file = evaluation_file
+			),
+			envir = new.env(),
+			quiet = TRUE
+		),
+		silent = TRUE
+	)
+	if (inherits(e, "try-error")) {
+		stop(conditionMessage(e), call. = FALSE)
+	}
+	if (!file.exists(fhtml)) {
+		stop("report rendering did not produce HTML output", call. = FALSE)
+	}
+	clean_up(fhtml, outf)
+
+	if (open) utils::browseURL(outf)
+	invisible(outf)
+}
+
+
 make_reports <- function(path, group="", cache=TRUE) {
 
 	needs <- c("rmarkdown", "kableExtra", "leaflet", "summarytools")
