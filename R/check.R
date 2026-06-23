@@ -236,7 +236,7 @@ check_metadata <- function(x, answ) {
 
 get_groupvars <- function(group) {		
 	excl <- c("metadata", "carob-metadata")
-	if (grepl("soil", group)) excl <- c("crop", excl)
+	if (grepl("soil", group)) excl <- c("crop", "management", excl)
 	vocal::accepted_variables(exclude=excl)
 }
 
