@@ -45,7 +45,7 @@ write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, var_meta
 		dir.create(file.path(path, "data", "evaluation", group), FALSE, TRUE)
 		wide$dataset_id <- metadata$dataset_id
 		opt <- options("carobiner_check")
-		answ <- check_terms(metadata, wide, long, wth, var_meta, group, check=opt)	
+		answ <- check_terms(wide, metadata, long, wth, var_meta, group, check=opt)	
 		fmsg <- file.path(path, "data", "messages", group, paste0(cleanuri, ".csv"))
 		if (file.exists(fmsg)) file.remove(fmsg)
 		

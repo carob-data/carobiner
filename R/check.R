@@ -227,7 +227,7 @@ check_soil <- function(x, answ) {
 check_metadata <- function(x, answ) {
 	trms <- vocal::accepted_variables(c("metadata", "carob-metadata"))
 	answ <- check_combined(x, trms, answ)
-	if (grepl("http", x$uri)) {
+	if ("uri" %in% names(x) && any(grepl("http", x$uri))) {
 		answ[nrow(answ)+1, ] <- c("uri", "http in uri")
 	}
 	answ
@@ -310,8 +310,7 @@ carob_vocabulary <- function(x=NULL, save=FALSE, add=TRUE, reset=FALSE) {
 }
 
 
-check_terms <- function(metadata=NULL, records=NULL, longrecs=NULL, wth=NULL, soil=NULL, group="", check="all") {
-
+check_terms <- function(records=NULL, metadata=NULL, longrecs=NULL, wth=NULL, soil=NULL, group="", check="all") {
 	
 	vocal::set_vocabulary(carob_vocabulary(), quiet=TRUE)
 	vocal::check_vocabulary(delay=4, quiet=FALSE)

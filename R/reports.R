@@ -102,7 +102,7 @@ make_report <- function(records, metadata = NULL, issues = NULL, group = "",
 	vocal::check_vocabulary(delay = 4, quiet = FALSE)
 
 	if (is.null(issues)) {
-		issues <- check_terms(metadata = metadata, records = records, group = group, check = check)
+		issues <- check_terms(records = records, metadata = metadata, group = group, check = check)
 	}
 
 	if (is.null(path)) path <- tempdir()
