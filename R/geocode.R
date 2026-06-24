@@ -1,13 +1,16 @@
 
 geo_adm <- function(country, adm, cache_path=NULL) {
+	stopifnot(packageVersion("terra") >= "1.9.36")
+	adm <- round(adm[1])
+	stopifnot(adm > 0 & adm < 6)
 	if (is.null(cache_path)) {
 		g <- geodata::gadm(country, level=adm)
 	} else {
 		g <- geodata::gadm(country, level=adm, path)	
 	}
-	x <- hull(g, "circle", NA)
-	unc <- round(sqrt(expanse(x) / pi))
-	xy <- crds(centroids(g, inside=TRUE))
+	x <- terra::hull(g, "circle", NA)
+	unc <- round(sqrt(terra::expanse(x) / pi))
+	xy <- terra::crds(terra::centroids(g, inside=TRUE))
 	colnames(xy) <- c("longitude", "latitude")
 	names <- paste0("NAME_", 1:adm)
 	adm <- g[, names, drop=TRUE]
