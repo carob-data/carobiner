@@ -1,4 +1,21 @@
 
+geo_adm <- function(country, adm, cache_path=NULL) {
+	if (is.null(cache_path)) {
+		g <- geodata::gadm(country, level=adm)
+	} else {
+		g <- geodata::gadm(country, level=adm, path)	
+	}
+	x <- hull(g, "circle", NA)
+	unc <- round(sqrt(expanse(x) / pi))
+	xy <- crds(centroids(g, inside=TRUE))
+	colnames(xy) <- c("longitude", "latitude")
+	names <- paste0("NAME_", 1:adm)
+	adm <- g[, names, drop=TRUE]
+	names(adm) <- gsub("NAME_", "adm", names(adm))
+	data.frame(country=country, adm, xy, geo_undertainty=unc)
+}
+
+
 geocode_duplicates <- function(x, vars=NULL) {
 	if (is.null(vars)) {
 		cn <- colnames(x)
