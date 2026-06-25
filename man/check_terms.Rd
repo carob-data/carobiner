@@ -7,7 +7,7 @@ Check the terms uses in a dataset
 }
 
 \description{
-Check the terms used in a dataset. A warning is given if bad or missing terms or vocabulary are encountered. 
+Check the terms used in a dataset. A data.frame is returned that lists: unknown variables; required variables that are missing; character values that are not accepted; numeric variables that are out of the expected range; and variables with the wrong data type.
 }
 
 \usage{
