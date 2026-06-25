@@ -10,7 +10,7 @@ geo_adm <- function(country, adm, cache_path=NULL) {
 	}
 	x <- terra::hull(g, "circle", NA)
 	unc <- round(sqrt(terra::expanse(x) / pi))
-	xy <- terra::crds(terra::centroids(g, inside=TRUE))
+	xy <- round(terra::crds(terra::centroids(g, inside=TRUE)), 4)
 	colnames(xy) <- c("longitude", "latitude")
 	names <- paste0("NAME_", 1:adm)
 	adm <- g[, names, drop=TRUE]

@@ -28,3 +28,12 @@ check_terms(records=NULL, metadata=NULL, longrecs=NULL, wth=NULL, soil=NULL, gro
 data.frame
 }
 
+\examples{
+
+records <- utils::read.csv(system.file("ex/records.csv", package = "carobiner"))
+meta <- utils::read.csv(system.file("ex/metadata.csv", package = "carobiner"))
+
+x <- check_terms(records, meta)
+x
+
+}
