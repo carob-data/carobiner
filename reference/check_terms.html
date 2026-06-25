@@ -77,6 +77,31 @@
     <p>data.frame</p>
     </div>
 
+    <div id="ref-examples">
+    <h2>Examples</h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">records</span> <span class="op">&lt;-</span> <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"ex/records.csv"</span>, package <span class="op">=</span> <span class="st">"carobiner"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"ex/metadata.csv"</span>, package <span class="op">=</span> <span class="st">"carobiner"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">check_terms</span><span class="op">(</span><span class="va">records</span>, <span class="va">meta</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>incomplete final line found on 'https://api.github.com/repos/controvoc/terminag/commits/main'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Cached as: /home/runner/.local/share/.carob/gadm/gadm36_adm0_r1_pk.rds</span>
+<span class="r-in"><span><span class="va">x</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               check</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 unknown variables</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      bad datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3         NA values</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      bad datatype</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5     out of bounds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                   msg</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                    crops, countries</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                    version (integer, not character)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                               yield</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 trial_id (integer, not character), plot_id (integer, not character)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                 grain_P (15, 49), residue_P (1, 26)</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>
