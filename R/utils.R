@@ -98,3 +98,62 @@ replace_values <- function(x, from, to, must_have=TRUE) {
 	x
 }
 
+
+df_dput <- function(x, drop = NULL, name = NULL, indent = 4, digits=5) {
+	stopifnot(is.data.frame(x))
+	if (length(drop)) {
+		x <- x[, setdiff(names(x), drop), drop = FALSE]
+	}
+	sp <- paste(rep(" ", indent), collapse = "")
+	if (ncol(x) == 0) {
+		code <- "data.frame()"
+	} else {
+		cols <- vapply(names(x), function(nm) {
+			paste0(nm, " = ", .format_r_vec(x[[nm]], digits = digits))
+		}, character(1), USE.NAMES = FALSE)
+		body <- paste0(sp, cols, collapse = paste0(",", "\n"))
+		code <- paste0("data.frame(\n", body, "\n)")
+	}
+	if (!is.null(name)) {
+		code <- paste0(name, " <- ", code)
+	}
+	cat(code, "\n", sep = "")
+	invisible(code)
+}
+
+
+.format_r_vec <- function(v, digits = NULL) {
+	if (is.factor(v)) v <- as.character(v)
+	if (is.character(v)) {
+		out <- ifelse(
+			is.na(v),
+			"NA",
+			paste0('"', gsub('"', '\\"', v, fixed = TRUE), '"')
+		)
+		return(paste0("c(", paste(out, collapse = ", "), ")"))
+	}
+	if (is.logical(v)) {
+		out <- ifelse(is.na(v), "NA", ifelse(v, "TRUE", "FALSE"))
+		return(paste0("c(", paste(out, collapse = ", "), ")"))
+	}
+	if (is.integer(v)) {
+		out <- ifelse(is.na(v), "NA", as.character(v))
+		return(paste0("c(", paste(out, collapse = ", "), ")"))
+	}
+	if (is.numeric(v)) {
+		if (!is.null(digits)) v <- round(v, digits)
+		out <- vapply(v, .format_r_num, character(1))
+		return(paste0("c(", paste(out, collapse = ", "), ")"))
+	}
+	stop("unsupported column type: ", paste(class(v), collapse = "/"), call. = FALSE)
+}
+
+
+.format_r_num <- function(x) {
+	if (is.na(x)) return("NA")
+	if (abs(x - round(x)) < 1e-8 && abs(x) < 1e15) {
+		return(as.character(as.integer(round(x))))
+	}
+	format(x, scientific = FALSE, trim = TRUE, digits = 15)
+}
+

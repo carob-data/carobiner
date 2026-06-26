@@ -8,9 +8,14 @@ geo_adm <- function(country, adm, cache_path=NULL) {
 	} else {
 		g <- geodata::gadm(country, level=adm, path)	
 	}
-	x <- terra::hull(g, "circle", NA)
-	unc <- round(sqrt(terra::expanse(x) / pi))
-	xy <- round(terra::crds(terra::centroids(g, inside=TRUE)), 4)
+	if (packageVersion("terra") >= "1.9.37") {
+		xy <- round(terra::crds(terra::centroids(g, inside=FALSE, correct=TRUE)))	
+	} else {
+		x <- terra::hull(g, "circle", NA)
+		unc <- round(sqrt(terra::expanse(x) / pi))
+		xy <- round(terra::crds(terra::centroids(g, inside=TRUE)))
+	}
+	xy <- round(xy, 4)
 	colnames(xy) <- c("longitude", "latitude")
 	names <- paste0("NAME_", 1:adm)
 	adm <- g[, names, drop=TRUE]
