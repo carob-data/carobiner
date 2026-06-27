@@ -99,7 +99,7 @@ replace_values <- function(x, from, to, must_have=TRUE) {
 }
 
 
-df_dput <- function(x, drop = NULL, name = NULL, indent = 4, digits=5) {
+dfput <- function(x, name = NULL, digits=5, indent=4, drop = NULL) {
 	stopifnot(is.data.frame(x))
 	if (length(drop)) {
 		x <- x[, setdiff(names(x), drop), drop = FALSE]
@@ -125,10 +125,7 @@ df_dput <- function(x, drop = NULL, name = NULL, indent = 4, digits=5) {
 .format_r_vec <- function(v, digits = NULL) {
 	if (is.factor(v)) v <- as.character(v)
 	if (is.character(v)) {
-		out <- ifelse(
-			is.na(v),
-			"NA",
-			paste0('"', gsub('"', '\\"', v, fixed = TRUE), '"')
+		out <- ifelse(is.na(v), "NA", paste0('"', gsub('"', '\\"', v, fixed = TRUE), '"')
 		)
 		return(paste0("c(", paste(out, collapse = ", "), ")"))
 	}

@@ -9,11 +9,13 @@ geo_adm <- function(country, adm, cache_path=NULL) {
 		g <- geodata::gadm(country, level=adm, path)	
 	}
 	if (packageVersion("terra") >= "1.9.37") {
-		xy <- round(terra::crds(terra::centroids(g, inside=FALSE, correct=TRUE)))	
+		cntr <- terra::centroids(g, inside=FALSE, correct=TRUE)
+		unc <- terra::furdist(cntr, g, pairwise=TRUE) 
+		xy <- terra::crds(cntr)
 	} else {
 		x <- terra::hull(g, "circle", NA)
 		unc <- round(sqrt(terra::expanse(x) / pi))
-		xy <- round(terra::crds(terra::centroids(g, inside=TRUE)))
+		xy <- terra::crds(terra::centroids(g, inside=TRUE))
 	}
 	xy <- round(xy, 4)
 	colnames(xy) <- c("longitude", "latitude")
