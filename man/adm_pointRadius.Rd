@@ -30,6 +30,6 @@ data.frame
 
 \examples{
 v <- terra::vect(system.file("ex/lux.shp", package="terra"))[, c("NAME_1", "NAME_2")]
-adm_pointRadius(v, method="high_probability")
-
-}
+a <- adm_pointRadius(v, method="high_probability")
+dfput(a[1:3, ])
+} 
