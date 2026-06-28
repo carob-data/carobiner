@@ -1,28 +1,40 @@
 
-geo_adm <- function(country, adm, cache_path=NULL) {
-	stopifnot(packageVersion("terra") >= "1.9.36")
-	adm <- round(adm[1])
-	stopifnot(adm > 0 & adm < 6)
-	if (is.null(cache_path)) {
-		g <- geodata::gadm(country, level=adm)
+adm_pointRadius <- function(country, adm, cache_path=NULL, method="high_probability") {
+	stopifnot(packageVersion("terra") >= "1.9.37")
+	method <- match.arg(tolower(method), c("high_probability", "low_uncertainty"))
+	
+	if (inherits(country, "SpatVector")) {
+		adm <- NA
+		g <- country
 	} else {
-		g <- geodata::gadm(country, level=adm, path)	
+		adm <- round(adm[1])
+		stopifnot(isTRUE(adm >= 0 & adm < 6))
+		if (is.null(cache_path)) {
+			g <- geodata::gadm(country, level=adm)
+		} else {
+			g <- geodata::gadm(country, level=adm, path)	
+		}
 	}
-	if (packageVersion("terra") >= "1.9.37") {
-		cntr <- terra::centroids(g, inside=FALSE, correct=TRUE)
-		unc <- terra::furdist(cntr, g, pairwise=TRUE) 
-		xy <- terra::crds(cntr)
+	
+	if (method == "high_probability") {
+		xy <- terra::centroids(g, inside=FALSE, correct=TRUE)
 	} else {
-		x <- terra::hull(g, "circle", NA)
-		unc <- round(sqrt(terra::expanse(x) / pi))
-		xy <- terra::crds(terra::centroids(g, inside=TRUE))
+		h <- terra::hull(g, "circle", NA)
+		hc <- terra::centroids(h)
+		## correct: move hc to g if needed
+		xy <- terra::snapeTo(hc, g)
 	}
-	xy <- round(xy, 4)
+	unc <- round(terra::furdist(xy, g, pairwise=TRUE))
+	xy <- round(terra::crds(xy), 4)
 	colnames(xy) <- c("longitude", "latitude")
-	names <- paste0("NAME_", 1:adm)
-	adm <- g[, names, drop=TRUE]
-	names(adm) <- gsub("NAME_", "adm", names(adm))
-	data.frame(country=country, adm, xy, geo_undertainty=unc)
+	if (isTRUE(adm >= 0)) {
+		names <- paste0("NAME_", 1:adm)
+		ad <- g[, names, drop=TRUE]
+		names(ad) <- gsub("NAME_", "adm", names(ad))
+		data.frame(country=country, ad, xy, geo_undertainty=unc, geo_source=paste0("GADM 4.1, adm", adm))
+	} else {
+		data.frame(values(g), xy, geo_undertainty=unc)	
+	}
 }
 
 
