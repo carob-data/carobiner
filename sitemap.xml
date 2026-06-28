@@ -3,6 +3,7 @@
 <url><loc>/LICENSE-text.html</loc></url>
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
+<url><loc>/reference/adm_pointRadius.html</loc></url>
 <url><loc>/reference/bindr.html</loc></url>
 <url><loc>/reference/carobiner-package.html</loc></url>
 <url><loc>/reference/change_names.html</loc></url>
@@ -12,7 +13,6 @@
 <url><loc>/reference/eng_months_to_nr.html</loc></url>
 <url><loc>/reference/find_outliers.html</loc></url>
 <url><loc>/reference/fix_name.html</loc></url>
-<url><loc>/reference/geo_adm.html</loc></url>
 <url><loc>/reference/geocode.html</loc></url>
 <url><loc>/reference/geocode_duplicates.html</loc></url>
 <url><loc>/reference/get_data.html</loc></url>
