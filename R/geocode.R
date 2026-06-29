@@ -12,7 +12,7 @@ adm_pointRadius <- function(country, adm, cache_path=NULL, method="high_probabil
 		if (is.null(cache_path)) {
 			g <- geodata::gadm(country, level=adm)
 		} else {
-			g <- geodata::gadm(country, level=adm, path)	
+			g <- geodata::gadm(country, level=adm, cache_path)	
 		}
 	}
 	
