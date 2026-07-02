@@ -21,7 +21,7 @@ sort_by_terms <- function(x, type, group) {
 		#trms <- vocal::accepted_variables(vars)
 		trms <- vocal::accepted_variables()
 	}
-	trms <- trms$name[trms$name %in% names(x)]
+	trms <- unique(trms$name[trms$name %in% names(x)])
 	x[, trms]
 }
 
