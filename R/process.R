@@ -13,15 +13,16 @@ get_function <- function(name, path, group="") {
 sort_by_terms <- function(x, type, group) {
 	if (is.null(x)) return(x)
 	if (type == "metadata") {
-		trms <- vocal::accepted_variables(c("metadata", "carob-metadata"))
+		trms <- vocal::accepted_variables(c("metadata", "carob-metadata"))$name
+		trms <- c(trms, "crops", "countries")
 	} else if (type == "weather") {
-		trms <- vocal::accepted_variables("weather")
+		trms <- vocal::accepted_variables("weather")$name
 	} else {
 		#vars <- get_groupvars(group)
 		#trms <- vocal::accepted_variables(vars)
-		trms <- vocal::accepted_variables()
+		trms <- vocal::accepted_variables()$name
 	}
-	trms <- unique(trms$name[trms$name %in% names(x)])
+	trms <- unique(trms[trms %in% names(x)])
 	x[, trms]
 }
 

@@ -204,7 +204,7 @@ check_combined <- function(x, trms, answ, required=TRUE) {
 	if (length(dats) > 0) {
 		a3 <- do.call(rbind, lapply(dats, \(dat) vocal::check_date(x, dat, trms)))
 		answ <- rbind(answ, a3) 
-	}
+	}	
 	answ
 }
 
@@ -229,6 +229,14 @@ check_metadata <- function(x, answ) {
 	answ <- check_combined(x, trms, answ)
 	if ("uri" %in% names(x) && any(grepl("http", x$uri))) {
 		answ[nrow(answ)+1, ] <- c("uri", "http in uri")
+	}
+	if (isTRUE(x$carob_date > "2026-07-01")) {
+		if (is.null(x$carob_effort) || is.na(x$carob_effort)) {
+			answ[nrow(answ)+1, ] <- c("metadata", "carob_effort not valid")			
+		}
+	}	
+	if (is.null(x$carob_completion) || is.na(x$carob_completion)) {
+		answ[nrow(answ)+1, ] <- c("metadata", "carob_completion not valid")			
 	}
 	answ
 }
