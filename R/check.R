@@ -249,6 +249,11 @@ get_groupvars <- function(group) {
 }
 
 
+suppress_some_warnings <- function(x) {
+	x[!((x[,1] == "all NA") & (x[,2] == "yield_isfresh")), , drop=FALSE]
+}
+
+
 check_records <- function(answ, x, group, check="all", required=TRUE, dupid=TRUE) {
 	trms <- get_groupvars(group)
 	answ <- check_combined(x, trms, answ, required=required)
@@ -277,7 +282,8 @@ check_records <- function(answ, x, group, check="all", required=TRUE, dupid=TRUE
 	if (("site" %in% locvars) & (!("location" %in% locvars))) {
 		answ[nrow(answ)+1, ] <- c("location/site", "variable 'site' is not allowed if variable 'location' is absent")
 	}
-	answ
+	
+	suppress_some_warnings(answ)
 }
 
 
