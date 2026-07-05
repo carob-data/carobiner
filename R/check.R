@@ -83,19 +83,25 @@ check_cropyield <- function(x, answ) {
 
 check_pubs <- function(x, path, answ) {
 	if (isTRUE(nchar(x$publication) > 0 )) {
-		if (!grepl("http", x$publication)) {
-			allpubs <- list.files(file.path(path, "references"))
-			pubs <- unlist(strsplit(x$publication, ";|; "))
-			pubs <- yuri::simpleURI(pubs)
-			for (pub in pubs) {
-				if (is.null(pub)) { next }
-				where <- grep(pub, allpubs, fixed=TRUE)
-				if (length(where) == 0) {
-					answ[nrow(answ)+1, ] <- c("reference file missing", pub)
+		allpubs <- tolower(basename(list.files(file.path(path, "references"))))
+		publications <- tolower(trimws(unlist(strsplit(x$publication, ";|; "))))
+		for (i in 1:seq_along(publications)) {
+			pub <- publications[i]
+			if (grepl("http", pub)) {
+				if (grepl("handle\\.net|doi\\.org", pub)) {
+					answ[nrow(answ)+1, ] <- c("use URI, not URL", pub)			
 				}
 			}
-		}
-	} 	
+			# else {
+			#	pub <- yuri::simpleURI(pub)
+			#	if (is.null(pub)) { next }
+			#	where <- grep(pub, allpubs, ignore.case=TRUE)
+			#	if (length(where) == 0) {
+			#		answ[nrow(answ)+1, ] <- c("reference file missing", pub)
+			#	}
+			#}
+		} 	
+	}
 	answ
 }
 
