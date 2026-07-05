@@ -112,19 +112,26 @@ check_pubs <- function(x, path, answ) {
 check_longrecs <- function(answ, longrecs, records) {
 	rcid <- !is.null(longrecs$record_id)
 	trid <- !is.null(longrecs$trial_id)
-	if ((rcid + trid) != 1) {
-	    answ[nrow(answ)+1, ] <- c("id", "longrecs must have either record_id or trial_id")
+	hhid <- !is.null(longrecs$hhid)
+	if ((hhid + rcid + trid) < 1) {
+	    answ[nrow(answ)+1, ] <- c("id", "longrecs must have either record_id, trial_id or hhid")
 	} else if (rcid) {
 		if (is.null(records$record_id)) {
-			answ[nrow(answ)+1, ] <- c("id", "record_id in 'longrecs' but not in other records")
+			answ[nrow(answ)+1, ] <- c("id", "record_id in long but not in wide records")
 	    } else if (any(!(longrecs$record_id %in% records$record_id))) {
-			answ[nrow(answ)+1, ] <- c("id", "record_id(s) do not match")
+			answ[nrow(answ)+1, ] <- c("id", "record_id(s) do not match between long and wide records")
+	    }
+	} else if (hhid) {
+		if (is.null(records$hhid)) {
+			answ[nrow(answ)+1, ] <- c("id", "hhid in long but not in wide records")
+	    } else if (any(!(unique(longrecs$hhid) %in% records$hhid))) {
+			answ[nrow(answ)+1, ] <- c("id", "hhid(s) do not match between long and wide records")
 	    }
 	} else {
 	    if (is.null(records$trial_id)) {
-			answ[nrow(answ)+1, ] <- c("id", "trial_id in 'longrecs' but not in other records")
+			answ[nrow(answ)+1, ] <- c("id", "trial_id in long but not in wide records")
 	    } else if (any(!(longrecs$trial_id %in% records$trial_id))) {
-			answ[nrow(answ)+1, ] <- c("id", "trial_id(s) do not match")
+			answ[nrow(answ)+1, ] <- c("id", "trial_id(s) do not match between long and wide records")
 	    }
 	}
 	cns <- c(colnames(records), colnames(longrecs))
@@ -134,7 +141,7 @@ check_longrecs <- function(answ, longrecs, records) {
 		answ[nrow(answ)+1, ] <- c("time/depth", "no time/depth variables in long records?")	
 	}
 
-	cns <- cns[!(cns %in% c("dataset_id", "record_id", "trial_id", "date"))]  # date?
+	cns <- cns[!(cns %in% c("dataset_id", "record_id", "trial_id", "date", "hhid"))]  # date?
 	cns <- table(cns)
 	if (any(cns>1)) {
 		dups <- paste(names(cns[cns>1]), collapse=", ")
@@ -255,8 +262,12 @@ get_groupvars <- function(group) {
 }
 
 
-suppress_some_warnings <- function(x) {
-	x[!((x[,1] == "all NA") & (x[,2] == "yield_isfresh")), , drop=FALSE]
+suppress_some_warnings <- function(x, group="") {
+	x <- x[!((x[,1] == "all NA") & (x[,2] == "yield_isfresh")), , drop=FALSE]
+	if (group == "survey")  {
+		x <- x[!((x[,1] == "missing variables") & (x[,2] == "trial_id")), , drop=FALSE]
+	}
+	x
 }
 
 
@@ -289,7 +300,7 @@ check_records <- function(answ, x, group, check="all", required=TRUE, dupid=TRUE
 		answ[nrow(answ)+1, ] <- c("location/site", "variable 'site' is not allowed if variable 'location' is absent")
 	}
 	
-	suppress_some_warnings(answ)
+	suppress_some_warnings(answ, group)
 }
 
 
