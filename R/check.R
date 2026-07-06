@@ -357,7 +357,13 @@ load_required_variables <- function() {
 
 # Return the required variables that are missing from vars
 missing_required_variables <- function(answ, vars, group="") {
-	rv <- .carob_environment$required_variables
+	rv <- carobiner:::.carob_environment$required_variables
+	m <- grepl("meta", rv$file)
+	if (group == "metadata") {
+		rv <- rv[m, ]
+	} else {
+		rv <- rv[!m, ]	
+	}
 	if (is.null(rv) || nrow(rv) == 0) return(character(0))
 	if (is.data.frame(vars)) vars <- names(vars)
 	req <- trimws(rv$required)
@@ -368,7 +374,11 @@ missing_required_variables <- function(answ, vars, group="") {
 		else grepl(r, group, fixed=TRUE)}, logical(1))
 	miss <- setdiff(unique(rv$name[needed]), vars)
 	if (length(miss) > 0) {
-		answ[nrow(answ)+1, ] <- c("missing required variables", miss)
+		if (group == "metadata") {
+			answ[nrow(answ)+1, ] <- c("missing metadata", paste(miss, collapse=", "))		
+		} else {
+			answ[nrow(answ)+1, ] <- c("missing variables", paste(miss, collapse=", "))
+		}
 	}
 	answ
 }
@@ -381,15 +391,15 @@ check_NAok_variables <- function(answ, x) {
 	if (is.null(rv) || nrow(rv) == 0 || !is.data.frame(x)) return(answ)
 	noNA <- unique(rv$name[trimws(rv$NAok) == "no"])
 	
-	v <- NULL
+	bad <- NULL
 	for (v in intersect(noNA, names(x))) {
 		if (any(is.na(x[[v]]))) {
 			bad <- c(bad, v)
 		}
 	}
-	if (!is.null(v)) {
-		v <- paste(v, collapse=", ")
-		answ[nrow(answ)+1, ] <- c("NA detected", v)
+	if (!is.null(bad)) {
+		bad <- paste(v, collapse=", ")
+		answ[nrow(answ)+1, ] <- c("NA detected", bad)
 	}
 	answ
 }
@@ -404,9 +414,11 @@ check_terms <- function(records=NULL, metadata=NULL, longrecs=NULL, wth=NULL, so
 	if (check == "none") {
 		return(answ)
 	}
+	recnms <- c(names(records), names(longrecs))
+
 	if (!is.null(metadata)) {
 		answ <- check_metadata(metadata, answ)
-		recnms <- c(names(records), names(longrecs))
+		answ <- missing_required_variables(answ, names(meta), "metadata")
 		if (!is.null(metadata$treatment_vars)) {
 			answ <- check_treatments(answ, metadata$treatment_vars, metadata$data_type, recnms, records, "treatment")
 		}
@@ -434,7 +446,7 @@ check_terms <- function(records=NULL, metadata=NULL, longrecs=NULL, wth=NULL, so
 		answ <- find_duplicates(answ, records, longrecs)
 	}
 	
-	answ <- missing_required_variables(answ, c(names(records), names(longrecs)), group)
+	answ <- missing_required_variables(answ, recnms, group)
 	answ <- check_NAok_variables(answ, records)
 	answ <- check_NAok_variables(answ, longrecs)
 	
