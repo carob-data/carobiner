@@ -341,6 +341,39 @@ carob_vocabulary <- function(x=NULL, save=FALSE, add=TRUE, reset=FALSE) {
 }
 
 
+# Called from .onLoad
+load_required_variables <- function() {
+	f <- system.file("terms/required_variables.csv", package="carobiner")
+	if (!nzchar(f) || !file.exists(f)) {
+		.carob_environment$required_variables <- NULL
+		return(invisible(NULL))
+	}
+	x <- try(utils::read.csv(f, stringsAsFactors=FALSE, colClasses="character"), silent=TRUE)
+	if (inherits(x, "try-error")) x <- NULL
+	.carob_environment$required_variables <- x
+	invisible(x)
+}
+
+
+# Return the required variables that are missing from vars
+missing_required_variables <- function(answ, vars, group="") {
+	rv <- .carob_environment$required_variables
+	if (is.null(rv) || nrow(rv) == 0) return(character(0))
+	if (is.data.frame(vars)) vars <- names(vars)
+	req <- trimws(rv$required)
+	needed <- vapply(req, function(r) {
+		if (r == "yes") TRUE
+		else if (r == "" || r == "no") FALSE
+		else if (startsWith(r, "!")) !grepl(substring(r, 2), group, fixed=TRUE)
+		else grepl(r, group, fixed=TRUE)}, logical(1))
+	miss <- setdiff(unique(rv$name[needed]), vars)
+	if (length(miss) > 0) {
+		answ[nrow(answ)+1, ] <- c("missing required variables", miss)
+	}
+	answ
+}
+
+
 check_terms <- function(records=NULL, metadata=NULL, longrecs=NULL, wth=NULL, soil=NULL, group="", check="all") {
 	
 	vocal::set_vocabulary(carob_vocabulary(), quiet=TRUE)
@@ -379,6 +412,8 @@ check_terms <- function(records=NULL, metadata=NULL, longrecs=NULL, wth=NULL, so
 		answ <- check_records(answ, longrecs, group=group, check=check, required=FALSE, dupid=FALSE)
 		answ <- find_duplicates(answ, records, longrecs)
 	}
+	
+	answ <- missing_required_variables(answ, c(names(records), names(longrecs)), group)
 	
 	if (!is.null(wth)) {
 		answ <- check_weather(wth, answ)

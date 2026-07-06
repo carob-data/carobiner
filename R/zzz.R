@@ -4,6 +4,7 @@
 	httr::timeout(15)
 	options(timeout = max(1500, getOption("timeout")))
 	check_package_versions(c("yuri", "vocal"))
+	load_required_variables()
 	# Replace yuri's default auth advice (which points to yuri::authenticate)
 	# with carob's: credentials live in a 'passwords.R' file in the carob root.
 	if (requireNamespace("yuri", quietly = TRUE) &&
