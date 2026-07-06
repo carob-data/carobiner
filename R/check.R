@@ -374,6 +374,27 @@ missing_required_variables <- function(answ, vars, group="") {
 }
 
 
+# Variables flagged NAok=="no" should not contain missing values. 
+check_NAok_variables <- function(answ, x) {
+	if (is.null(x)) return(answ)
+	rv <- .carob_environment$required_variables
+	if (is.null(rv) || nrow(rv) == 0 || !is.data.frame(x)) return(answ)
+	noNA <- unique(rv$name[trimws(rv$NAok) == "no"])
+	
+	v <- NULL
+	for (v in intersect(noNA, names(x))) {
+		if (any(is.na(x[[v]]))) {
+			bad <- c(bad, v)
+		}
+	}
+	if (!is.null(v)) {
+		v <- paste(v, collapse=", ")
+		answ[nrow(answ)+1, ] <- c("NA detected", v)
+	}
+	answ
+}
+
+
 check_terms <- function(records=NULL, metadata=NULL, longrecs=NULL, wth=NULL, soil=NULL, group="", check="all") {
 	
 	vocal::set_vocabulary(carob_vocabulary(), quiet=TRUE)
@@ -414,6 +435,8 @@ check_terms <- function(records=NULL, metadata=NULL, longrecs=NULL, wth=NULL, so
 	}
 	
 	answ <- missing_required_variables(answ, c(names(records), names(longrecs)), group)
+	answ <- check_NAok_variables(answ, records)
+	answ <- check_NAok_variables(answ, longrecs)
 	
 	if (!is.null(wth)) {
 		answ <- check_weather(wth, answ)
