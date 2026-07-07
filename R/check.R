@@ -398,7 +398,7 @@ check_NAok_variables <- function(answ, x) {
 		}
 	}
 	if (!is.null(bad)) {
-		bad <- paste(v, collapse=", ")
+		bad <- paste(bad, collapse=", ")
 		answ[nrow(answ)+1, ] <- c("NA detected", bad)
 	}
 	answ
@@ -418,7 +418,7 @@ check_terms <- function(records=NULL, metadata=NULL, longrecs=NULL, wth=NULL, so
 
 	if (!is.null(metadata)) {
 		answ <- check_metadata(metadata, answ)
-		answ <- missing_required_variables(answ, names(meta), "metadata")
+		answ <- missing_required_variables(answ, names(metadata), "metadata")
 		if (!is.null(metadata$treatment_vars)) {
 			answ <- check_treatments(answ, metadata$treatment_vars, metadata$data_type, recnms, records, "treatment")
 		}
