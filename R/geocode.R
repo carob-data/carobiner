@@ -31,9 +31,9 @@ adm_pointRadius <- function(country, adm, cache_path=NULL, method="high_probabil
 		names <- paste0("NAME_", 1:adm)
 		ad <- g[, names, drop=TRUE]
 		names(ad) <- gsub("NAME_", "adm", names(ad))
-		data.frame(country=country, ad, xy, geo_undertainty=unc, geo_source=paste0("GADM 4.1, adm", adm))
+		data.frame(country=country, ad, xy, geo_uncertainty=unc, geo_source=paste0("GADM 4.1, adm", adm))
 	} else {
-		data.frame(values(g), xy, geo_undertainty=unc)	
+		data.frame(values(g), xy, geo_undertainty=unc, geo_source=NA)	
 	}
 }
 

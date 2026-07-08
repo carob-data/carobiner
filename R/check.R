@@ -209,8 +209,8 @@ check_treatments <- function(answ, treatment, exp_type, vars, records, type) {
 }
 
 
-check_combined <- function(x, trms, answ, required=TRUE) {
-	a1 <- vocal::check_variables(x, trms, required)
+check_combined <- function(x, trms, answ) {
+	a1 <- vocal::check_variables(x, trms, required=FALSE)
 	a2 <- vocal::check_values(x, trms)
 	answ <- rbind(answ, a1, a2) 
 	dats <- grep("_date", names(x), value=TRUE)
@@ -271,9 +271,9 @@ suppress_some_warnings <- function(x, group="") {
 }
 
 
-check_records <- function(answ, x, group, check="all", required=TRUE, dupid=TRUE) {
+check_records <- function(answ, x, group, check="all", dupid=TRUE) {
 	trms <- get_groupvars(group)
-	answ <- check_combined(x, trms, answ, required=required)
+	answ <- check_combined(x, trms, answ)
 
 	aw <- vocal::check_datespan(x, "planting_date", "harvest_date", smin=45, smax=366)
 	answ <- rbind(answ, aw)
@@ -426,10 +426,15 @@ check_terms <- function(records=NULL, metadata=NULL, longrecs=NULL, wth=NULL, so
 			answ <- check_treatments(answ, metadata$response_vars, metadata$data_type, recnms, records, "response")
 		}
 	}
+
+	answ <- missing_required_variables(answ, recnms, group)
+
 	if (!is.null(records)) {
 		answ <- check_records(answ, records, group=group, check=check)
 		answ <- find_duplicates(answ, records, longrecs)
+		answ <- check_NAok_variables(answ, records)
 	}
+
 	if (!is.null(longrecs)) {
 		if (!is.null(records)) {
 			answ <- check_longrecs(answ, longrecs, records)
@@ -442,17 +447,15 @@ check_terms <- function(records=NULL, metadata=NULL, longrecs=NULL, wth=NULL, so
 			## also need to check the values, by variable. 
 			## should there be different value variables for different dataytypes?
 		}
-		answ <- check_records(answ, longrecs, group=group, check=check, required=FALSE, dupid=FALSE)
+		answ <- check_records(answ, longrecs, group=group, check=check, dupid=FALSE)
 		answ <- find_duplicates(answ, records, longrecs)
+		answ <- check_NAok_variables(answ, longrecs)
 	}
-	
-	answ <- missing_required_variables(answ, recnms, group)
-	answ <- check_NAok_variables(answ, records)
-	answ <- check_NAok_variables(answ, longrecs)
-	
+		
 	if (!is.null(wth)) {
 		answ <- check_weather(wth, answ)
 	}
+
 	if (!is.null(soil)) {
 		answ <- check_soil(soil, answ)
 	}
