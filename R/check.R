@@ -247,9 +247,9 @@ check_metadata <- function(x, answ) {
 		if (is.null(x$carob_effort) || is.na(x$carob_effort)) {
 			answ[nrow(answ)+1, ] <- c("metadata", "carob_effort not valid")			
 		}
-	}	
-	if (is.null(x$carob_completion) || is.na(x$carob_completion)) {
-		answ[nrow(answ)+1, ] <- c("metadata", "carob_completion not valid")			
+		if (is.null(x$carob_completion) || is.na(x$carob_completion)) {
+			answ[nrow(answ)+1, ] <- c("metadata", "carob_completion not valid")			
+		}
 	}
 	answ
 }
