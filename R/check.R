@@ -368,10 +368,16 @@ missing_required_variables <- function(answ, vars, group="") {
 	if (is.data.frame(vars)) vars <- names(vars)
 	req <- trimws(rv$required)
 	needed <- vapply(req, function(r) {
-		if (r == "yes") TRUE
-		else if (r == "" || r == "no") FALSE
-		else if (startsWith(r, "!")) !grepl(substring(r, 2), group, fixed=TRUE)
-		else grepl(r, group, fixed=TRUE)}, logical(1))
+		if (r == "yes") return(TRUE)
+		if (r == "" || r == "no") return(FALSE)
+		# multiple conditions separated by ";" must all hold, e.g. "!survey;!soil_samples"
+		conds <- trimws(unlist(strsplit(r, ";", fixed=TRUE)))
+		conds <- conds[conds != ""]
+		all(vapply(conds, function(cnd) {
+			if (startsWith(cnd, "!")) !grepl(substring(cnd, 2), group, fixed=TRUE)
+			else grepl(cnd, group, fixed=TRUE)
+		}, logical(1)))
+	}, logical(1))
 	miss <- setdiff(unique(rv$name[needed]), vars)
 	if (length(miss) > 0) {
 		if (group == "metadata") {
