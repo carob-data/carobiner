@@ -260,7 +260,7 @@ compile_carob <- function(path, group="", split_license=FALSE, zip=FALSE, excel=
 					if (file.exists(fzip)) file.remove(fzip)
 					utils::zip(fzip, c(outft, outmf, outff, outlf, outwf), zipflags, zip=pzip)
 				} 
-				if (excel) {
+				if (excel && (nrow(yy) < 1e6)) {
 					fxls <- gsub(".csv$", ".xlsx", outff)
 					if (have_warnings) {
 						dx <- list(sources=xx, terms=gterms, data=yy, warnings=wwrn)
