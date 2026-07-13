@@ -233,9 +233,9 @@ get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, 
 			if (!isTRUE(length(ff) > 0)) {
 				ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=TRUE, filter=FALSE)
 				suppress_filter <- TRUE
-			} else if (isTRUE(auto_json_bundle) && needs_recursive_json_bundle(raw_path, uname, filter_files(ff))) {
-				ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=TRUE, filter=FALSE)
-				suppress_filter <- TRUE
+			#} else if (isTRUE(auto_json_bundle) && needs_recursive_json_bundle(raw_path, uname, filter_files(ff))) {
+			#	ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=TRUE, filter=FALSE)
+			#	suppress_filter <- TRUE
 			}
 		}
 		if (!isTRUE(length(ff) > 0)) {
