@@ -198,7 +198,7 @@ check_carobiner_version <- function(path) {
 	TRUE
 }
 
-get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE, auto_json_bundle=TRUE, protocol="") {
+get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE, protocol="") {
 
 	check_carobiner_version(path)
 
@@ -226,9 +226,6 @@ get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, 
 			dpath <- file.path(dpath, uname)
 			p <- usr_pwd(path, "LSMS")
 			ff <- yuri:::get_LSMS(uri, dpath, p$username, p$password, cache=cache)
-			# LSMS datasets that must be downloaded manually return NULL.
-			# Let the caller handle this (e.g. `if (is.null(ff)) return(TRUE)`)
-			# instead of throwing "no files found" below.
 			if (is.null(ff)) return(NULL)
 		} else {
 			ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=recursive, filter=FALSE)
