@@ -113,8 +113,9 @@ check_longrecs <- function(answ, longrecs, records) {
 	rcid <- !is.null(longrecs$record_id)
 	trid <- !is.null(longrecs$trial_id)
 	hhid <- !is.null(longrecs$hhid)
-	if ((hhid + rcid + trid) < 1) {
-	    answ[nrow(answ)+1, ] <- c("id", "longrecs must have either record_id, trial_id or hhid")
+	plid <- !is.null(longrecs$plot_id)
+	if ((hhid + rcid + trid + plid) < 1) {
+	    answ[nrow(answ)+1, ] <- c("id", "longrecs must have either record_id, trial_id, plot_id, or hhid")
 	} else if (rcid) {
 		if (is.null(records$record_id)) {
 			answ[nrow(answ)+1, ] <- c("id", "record_id in long but not in wide records")
@@ -126,6 +127,12 @@ check_longrecs <- function(answ, longrecs, records) {
 			answ[nrow(answ)+1, ] <- c("id", "hhid in long but not in wide records")
 	    } else if (any(!(unique(longrecs$hhid) %in% records$hhid))) {
 			answ[nrow(answ)+1, ] <- c("id", "hhid(s) do not match between long and wide records")
+	    }
+	} else if (plid) {
+		if (is.null(records$plot_id)) {
+			answ[nrow(answ)+1, ] <- c("id", "plot_id in long but not in wide records")
+	    } else if (any(!(unique(longrecs$plot_id) %in% records$plot_id))) {
+			answ[nrow(answ)+1, ] <- c("id", "plot_id(s) do not match between long and wide records")
 	    }
 	} else {
 	    if (is.null(records$trial_id)) {
@@ -141,11 +148,11 @@ check_longrecs <- function(answ, longrecs, records) {
 		answ[nrow(answ)+1, ] <- c("time/depth", "no time/depth variables in long records?")	
 	}
 
-	cns <- cns[!(cns %in% c("dataset_id", "record_id", "trial_id", "date", "hhid"))]  # date?
+	cns <- cns[!(cns %in% c("dataset_id", "record_id", "trial_id", "plot_id", "date", "hhid"))]  # date?
 	cns <- table(cns)
 	if (any(cns>1)) {
 		dups <- paste(names(cns[cns>1]), collapse=", ")
-		answ[nrow(answ)+1, ] <- c("duplicates", paste("duplicate variables in records and longrecs:", dups))
+		answ[nrow(answ)+1, ] <- c("duplicates", paste("duplicate variables in wide and long data:", dups))
 	}
 
 	answ

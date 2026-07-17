@@ -23,7 +23,7 @@ grepaste <- function(pattern, x, ignore.case=TRUE, oper=NULL, value) {
 
 grepr <- function(x) {
 	r <- list(
-		hhid = grepaste("farmer", x),
+		hhid = grepaste("hhid|hh_id|householdid|household_id|farmer", x),
 		plot_id = grepaste("plot", x),
 		country = grepaste("country", x),
 		adm1 = grepaste("adm.*1|admin.*1|region|state|estado", x),
@@ -289,14 +289,14 @@ draft <- function(uri, path, group="draft", overwrite=FALSE) {
 
 	gh <- try(carobiner::on_github(uri), silent=TRUE)
 	if (NCOL(gh) > 1) {
-		warning("this dataset is already in Carob")
+		cat("\nThis dataset is already in Carob!\n\n")
 		print(gh)
 	}
 
 	voc <- carobiner::carob_vocabulary()
 	vocal::set_vocabulary(voc)
 
-	ff  <- carobiner::get_data(uri, path, group)
+	ff  <- carobiner::get_data(uri, path, group, recursive=TRUE)
 
 	meta <-	carobiner::get_metadata(uri, path, group, major=0, minor=0, draft=TRUE)
 	v <- c(unlist(strsplit(meta$version, "\\.")), NA, NA)
@@ -384,26 +384,17 @@ draft <- function(uri, path, group="draft", overwrite=FALSE) {
 	}
 
 	if (use_rejected) {
-		hdr <- c(
-			"#",
-			"# --- carobiner::draft() wrote this under scripts/_AI/_rejected/ (review here, then move manually) ---"
-		)
+		hdr <- "# REJECTED "
 		for (rr in reject_reasons) {
 			hdr <- c(hdr, paste("# Reason:", rr))
 		}
-		hdr <- c(hdr, "# After review: move to scripts/<group>/ if you complete it, or to scripts/_rejected/ if permanently dropped.", "#")
-		hdr <- c(hdr, "# carob_script() ends with return(FALSE): nothing left to auto-generate after data reads.", "#")
 		s <- c(hdr, s)
 	}
 
-	fscript <- if (use_rejected) {
-		file.path(path, "scripts", "_AI", "_rejected", paste0(did, ".R"))
-	} else {
-		file.path(path, "scripts", "_draft", group, paste0(did, ".R"))
-	}
+	fscript <- file.path(path, "scripts", "_draft", group, paste0(did, ".R"))
 
 	if (file.exists(fscript) && (!overwrite)) {
-		stop(paste(fscript, "exists. Use 'overwrite=TRUE' to overwrite it"))
+		stop(paste(fscript, "exists. Use 'overwrite=TRUE' to overwrite it"), call.=FALSE)
 	}
 	dir.create(dirname(fscript), FALSE, TRUE)
 	writeLines(s, fscript)
