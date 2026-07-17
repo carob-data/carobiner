@@ -21,6 +21,7 @@ K_fertilizer,management,!survey;!soil_samples,yes
 N_fertilizer,management,!survey;!soil_samples,yes
 P_fertilizer,management,!survey;!soil_samples,yes
 planting_date,management,!survey;!soil_samples,yes
+harvest_date,management,!survey;!soil_samples,yes
 authors,metadata,yes,no
 data_citation,metadata,yes,no
 data_organization,metadata,yes,yes
