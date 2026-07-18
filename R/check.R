@@ -440,7 +440,9 @@ check_terms <- function(records=NULL, metadata=NULL, longrecs=NULL, wth=NULL, so
 		}
 	}
 
-	answ <- missing_required_variables(answ, recnms, group)
+	if (!is.null(records) || !is.null(longrecs)) {
+		answ <- missing_required_variables(answ, recnms, group)
+	}
 
 	if (!is.null(records)) {
 		answ <- check_records(answ, records, group=group, check=check)
