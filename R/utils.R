@@ -10,6 +10,10 @@ unlabel <- function(d) {
 	data.frame(d)
 }
 
+read.dta <- function(f) {
+	haven::read_dta(f) |> unlabel()
+}
+
 
 eng_months_to_nr <- function(x) {
 	mnths1 <- c("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
