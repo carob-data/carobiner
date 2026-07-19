@@ -10,8 +10,13 @@ unlabel <- function(d) {
 	data.frame(d)
 }
 
-read.dta <- function(f) {
-	haven::read_dta(f) |> unlabel()
+read.dta <- function(f, unlabel=TRUE, ...) {
+	r <- haven::read_dta(f, ...)
+	if (unlabel) {
+		unlabel(r)
+	} else {
+		r
+	}
 }
 
 
