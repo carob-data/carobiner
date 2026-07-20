@@ -1,5 +1,7 @@
 
-adm_pointRadius <- function(country, adm, cache_path=NULL, method="high_probability") {
+
+
+adm_pointRadius <- function(country, adm, cache_path=NULL, method="high_probability", geo=NULL) {
 	stopifnot(packageVersion("terra") >= "1.9.37")
 	method <- match.arg(tolower(method), c("high_probability", "low_uncertainty"))
 	
@@ -16,17 +18,40 @@ adm_pointRadius <- function(country, adm, cache_path=NULL, method="high_probabil
 		}
 	}
 	
-	if (method == "high_probability") {
-		xy <- terra::centroids(g, inside=FALSE, correct=TRUE)
-	} else {
-		h <- terra::hull(g, "circle", NA)
-		hc <- terra::centroids(h)
-		## correct: move hc to g if needed
-		xy <- terra::snapeTo(hc, g)
+	if (!is.null(geo)) {
+		alev <- paste0("adm", adm)
+		blev <- paste0("NAME_", adm)
+		if (!(alev %in% names(geo))) {
+			stop(paste(alev, "not in names(geo)"), call.=FALSE)
+		}
+		ugeo <- unique(geo[, alev])
+		uadm <- unique(unlist(g[,blev,drop=TRUE]))
+		i <- match(ugeo, uadm)
+		if (any(is.na(i))) {
+			error(paste(alev, " not in boundaries file: ", paste(ugeo[is.na(i)], collapse=",")), call.=FALSE)
+		}
+		i <- match(geo[, alev], unlist(g[,blev,drop=TRUE]))
+		xy <- terra::vect(geo, c("longitude", "latitude"), crs="lonlat")
+		g <- g[i, ]
+		r <- terra::is.related(xy, g, "intersects")
+		if (!all(r)) {
+			warning(paste(sum(!r), " points not inside matching polygon"))
+		}
+		unc <- round(terra::furdist(xy, g, pairwise=TRUE))
+		xy <- geo[, c("longitude", "latitude")]
+	} else {	
+		if (method == "high_probability") {
+			xy <- terra::centroids(g, inside=FALSE, correct=TRUE)
+		} else {
+			h <- terra::hull(g, "circle", NA)
+			hc <- terra::centroids(h)
+			## correct: move hc to g if needed
+			xy <- terra::snapeTo(hc, g)
+		}
+		unc <- round(terra::furdist(xy, g, pairwise=TRUE))
+		xy <- round(terra::crds(xy), 4)
+		colnames(xy) <- c("longitude", "latitude")
 	}
-	unc <- round(terra::furdist(xy, g, pairwise=TRUE))
-	xy <- round(terra::crds(xy), 4)
-	colnames(xy) <- c("longitude", "latitude")
 	if (isTRUE(adm >= 0)) {
 		names <- paste0("NAME_", 1:adm)
 		ad <- g[, names, drop=TRUE]
