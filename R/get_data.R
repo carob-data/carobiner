@@ -198,7 +198,7 @@ check_carobiner_version <- function(path) {
 	TRUE
 }
 
-get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, filter=TRUE, protocol="") {
+get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=TRUE, filter=TRUE, protocol="") {
 
 	check_carobiner_version(path)
 
@@ -230,7 +230,7 @@ get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=FALSE, 
 		} else {
 			ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=recursive, filter=FALSE)
 			raw_path <- file.path(dpath, uname)
-			if (!isTRUE(length(ff) > 0)) {
+			if ((!recursive) && all(dir.exists(ff))) {
 				ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=TRUE, filter=FALSE)
 				suppress_filter <- TRUE
 			#} else if (isTRUE(auto_json_bundle) && needs_recursive_json_bundle(raw_path, uname, filter_files(ff))) {
