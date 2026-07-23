@@ -1,6 +1,6 @@
-\name{geo_adm}
+\name{adm_pointRadius}
 
-\alias{geo_adm}
+\alias{adm_pointRadius}
 
 
 \title{
