@@ -31,9 +31,9 @@ description,metadata,yes,no
 license,metadata,yes,no
 project,metadata,yes,yes
 publication,metadata,yes,yes
-response_vars,metadata,yes,no
+response_vars,metadata,!survey;!soil_samples,no
 title,metadata,yes,no
-treatment_vars,metadata,yes,no
+treatment_vars,metadata,!survey;!soil_samples,no
 uri,metadata,yes,no
 sample_id,soil,no,no
 hhid,survey,survey,no

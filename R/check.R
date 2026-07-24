@@ -262,9 +262,13 @@ check_metadata <- function(x, answ) {
 }
 
 
-get_groupvars <- function(group) {		
+get_groupvars <- function(group) {
+	# All terminag variables (except metadata-only ones) are "known" for every
+	# group. Whether a variable is *required* -- and which groups relax that, e.g.
+	# "!survey;!soil_samples" -- is handled separately via required_variables.csv.
+	# Do not exclude the "crop"/"management" vocabularies for soil groups: that
+	# would wrongly flag legitimate variables (e.g. "irrigated") as unknown.
 	excl <- c("metadata", "carob-metadata")
-	if (grepl("soil", group)) excl <- c("crop", "management", excl)
 	vocal::accepted_variables(exclude=excl)
 }
 
@@ -281,8 +285,14 @@ suppress_some_warnings <- function(x, group="") {
 check_records <- function(answ, x, group, check="all", dupid=TRUE) {
 	trms <- get_groupvars(group)
 	answ <- check_combined(x, trms, answ)
-
-	aw <- vocal::check_datespan(x, "planting_date", "harvest_date", smin=45, smax=366)
+	if (!is.null(x$crop)) {
+		i <- (x$crop %in% "cassava")
+		aw <- vocal::check_datespan(x[i,], "planting_date", "harvest_date", smin=45, smax=720)
+		answ <- rbind(answ, aw)
+		aw <- vocal::check_datespan(x[!i,], "planting_date", "harvest_date", smin=45, smax=366)
+	} else {
+		aw <- vocal::check_datespan(x, "planting_date", "harvest_date", smin=45, smax=366)
+	}
 	answ <- rbind(answ, aw)
 	answ <- check_consistency(x, answ)
 	answ <- check_cropyield(x, answ)
@@ -363,10 +373,10 @@ load_required_variables <- function() {
 
 
 # Return the required variables that are missing from vars
-missing_required_variables <- function(answ, vars, group="") {
+missing_required_variables <- function(answ, vars, group, metadata) {
 	rv <- carobiner:::.carob_environment$required_variables
 	m <- grepl("meta", rv$file)
-	if (group == "metadata") {
+	if (metadata) {
 		rv <- rv[m, ]
 	} else {
 		rv <- rv[!m, ]	
@@ -431,17 +441,18 @@ check_terms <- function(records=NULL, metadata=NULL, longrecs=NULL, wth=NULL, so
 
 	if (!is.null(metadata)) {
 		answ <- check_metadata(metadata, answ)
-		answ <- missing_required_variables(answ, names(metadata), "metadata")
-		if (!is.null(metadata$treatment_vars)) {
-			answ <- check_treatments(answ, metadata$treatment_vars, metadata$data_type, recnms, records, "treatment")
-		}
-		if (!is.null(metadata$response_vars)) {
-			answ <- check_treatments(answ, metadata$response_vars, metadata$data_type, recnms, records, "response")
+		answ <- missing_required_variables(answ, names(metadata), group, TRUE)
+		if (!group %in% c("survey", "soil_samples")) {
+			if (!is.null(metadata$treatment_vars)) {
+				answ <- check_treatments(answ, metadata$treatment_vars, metadata$data_type, recnms, records, "treatment")
+			}
+			if (!is.null(metadata$response_vars)) {
+				answ <- check_treatments(answ, metadata$response_vars, metadata$data_type, recnms, records, "response")
+			}
 		}
 	}
-
 	if (!is.null(records) || !is.null(longrecs)) {
-		answ <- missing_required_variables(answ, recnms, group)
+		answ <- missing_required_variables(answ, recnms, group, FALSE)
 	}
 
 	if (!is.null(records)) {
