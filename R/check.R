@@ -263,11 +263,7 @@ check_metadata <- function(x, answ) {
 
 
 get_groupvars <- function(group) {
-	# All terminag variables (except metadata-only ones) are "known" for every
-	# group. Whether a variable is *required* -- and which groups relax that, e.g.
-	# "!survey;!soil_samples" -- is handled separately via required_variables.csv.
-	# Do not exclude the "crop"/"management" vocabularies for soil groups: that
-	# would wrongly flag legitimate variables (e.g. "irrigated") as unknown.
+# All terminag variables (except metadata-only ones) are now "known" for every group.
 	excl <- c("metadata", "carob-metadata")
 	vocal::accepted_variables(exclude=excl)
 }

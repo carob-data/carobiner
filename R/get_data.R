@@ -208,7 +208,7 @@ get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=TRUE, f
 		dpath <- file.path(path, "data/raw", group)
 	}
 	if (is.null(files)) {	
-		uname <- yuri::simpleURI(uri)
+		uname <- yuri::simpleURI(uri, warn=FALSE)
 	} else {
 		uname <- gsub("/|:", "_", uri)
 	}

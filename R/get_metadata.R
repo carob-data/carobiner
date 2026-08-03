@@ -49,7 +49,7 @@ get_metadata <- function(uri, path, group, major, minor, ...) {
 		m$response_vars = "none"
 		return(m)
 	}
-	dataset_id <- yuri::simpleURI(uri)
+	dataset_id <- yuri::simpleURI(uri, warn=FALSE) #extract_metadata will warn
 	jpath <- file.path(path, "data", "raw", group)
 	m <- yuri::extract_metadata(uri, jpath)
 	m$carob_group <- group
