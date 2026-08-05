@@ -284,11 +284,14 @@ draft <- function(uri, path, group="draft", overwrite=FALSE) {
 #uri <- "hdl:11529/10548230"
 #group <- "survey"
 #overwrite <- TRUE
+	uri <- uri[1]
 	did <- yuri::simpleURI(uri)
+	if (is.na(did)) stop("not a valid URI")
 	## check on_carob ...
 
 	gh <- try(carobiner::on_github(uri), silent=TRUE)
-	if (NCOL(gh) > 1) {
+	if (!inherits(gh, "try-error") && is.data.frame(gh) && nrow(gh) > 0 &&
+	    !identical(gh$note[1], "not found")) {
 		cat("\nThis dataset is already in Carob!\n\n")
 		print(gh)
 	}

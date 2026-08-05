@@ -16,14 +16,22 @@ on_github(uri=NULL)
 }
  
 \arguments{
-  \item{uri}{character. A standard URI to check for}
+  \item{uri}{character. One or more URIs (or script basenames) to look up.
+  If \code{NULL}, all scripts are returned.}
 }
 
 \value{
-data.frame with variables: dataset, group, and pending
+data.frame with columns:
+\itemize{
+  \item{\code{uri}: clean identifier (see \code{\link[yuri]{simpleURI}})}
+  \item{\code{file}: script path under the repository
+    (e.g. \code{scripts/agronomy/doi_10.21223_HMMWZH.R}), or empty if not found}
+  \item{\code{note}: \code{""}, \code{"to be completed"}, \code{"REJECTED"},
+    \code{"not found"}, or \code{"not a valid URI"}}
+}
 
-\code{dataset} is the identifier derived from the URI, see \code{\link[yuri]{simpleURI}}.
-if a dataset is \code{pending}, the script is in the \code{_pending} folder and needs more work before it can be included.
+When \code{uri} is supplied, one row is returned per input value (order and
+duplicates are preserved).
 }
 
 
@@ -31,7 +39,7 @@ if a dataset is \code{pending}, the script is in the \code{_pending} folder and 
 \dontrun{
 all <- on_github()
 
-test <- on_github("doi:10.25502/07RT-7A40/D")
+test <- on_github(c("doi:10.21223/HMMWZH", "doi:10.7910/DVN/NDL2T3",
+                    "doi_10.7910_DVN_NDL2T3.R"))
 }
 }
-
