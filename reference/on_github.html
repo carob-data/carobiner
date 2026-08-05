@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">carobiner</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.7-19</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.7-20</span>
       </span>
     </div>
 
@@ -51,14 +51,19 @@
     <h2>Arguments</h2>
     <p></p>
 <dl><dt id="arg-uri">uri<a class="anchor" aria-label="anchor" href="#arg-uri"></a></dt>
-<dd><p>character. A standard URI to check for</p></dd>
+<dd><p>character. One or more URIs (or script basenames) to look up.
+  If <code>NULL</code>, all scripts are returned.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>data.frame with variables: dataset, group, and pending</p>
-<p><code>dataset</code> is the identifier derived from the URI, see <code><a href="https://rdrr.io/pkg/yuri/man/simpleURI.html" class="external-link">simpleURI</a></code>.
-if a dataset is <code>pending</code>, the script is in the <code>_pending</code> folder and needs more work before it can be included.</p>
+    <p>data.frame with columns:</p><ul><li><p><code>uri</code>: clean identifier (see <code><a href="https://rdrr.io/pkg/yuri/man/simpleURI.html" class="external-link">simpleURI</a></code>)</p></li>
+<li><p><code>file</code>: script path under the repository
+    (e.g. <code>scripts/agronomy/doi_10.21223_HMMWZH.R</code>), or empty if not found</p></li>
+<li><p><code>note</code>: <code>""</code>, <code>"to be completed"</code>, <code>"REJECTED"</code>,
+    <code>"not found"</code>, or <code>"not a valid URI"</code></p></li>
+</ul><p>When <code>uri</code> is supplied, one row is returned per input value (order and
+duplicates are preserved).</p>
     </div>
 
     <div id="ref-examples">
@@ -66,7 +71,8 @@ if a dataset is <code>pending</code>, the script is in the <code>_pending</code>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="va">all</span> <span class="op">&lt;-</span> <span class="fu">on_github</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">test</span> <span class="op">&lt;-</span> <span class="fu">on_github</span><span class="op">(</span><span class="st">"doi:10.25502/07RT-7A40/D"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">test</span> <span class="op">&lt;-</span> <span class="fu">on_github</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"doi:10.21223/HMMWZH"</span>, <span class="st">"doi:10.7910/DVN/NDL2T3"</span>,</span></span>
+<span class="r-in"><span>                    <span class="st">"doi_10.7910_DVN_NDL2T3.R"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
