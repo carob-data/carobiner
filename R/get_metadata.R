@@ -36,7 +36,7 @@ checkVersion <- function(vmeta, major, minor, fpath) {
 					stop(paste0("version ", major, " in script but version ", vmeta, " reported by data. Fix script."), call.=FALSE)					
 				}
 			}
-			stop(paste0("version ", major, " in script but version ", vmeta, " reported by data. Fix script or remove files with purge=TRUE"), call.=FALSE)	
+			stop(paste0("version ", major, " in script but version ", vmeta, " reported by data. Fix script or remove files with `get_data(, cache=FALSE`"), call.=FALSE)	
 		}
 	}
 }

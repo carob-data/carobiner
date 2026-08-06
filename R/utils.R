@@ -94,7 +94,15 @@ fix_varnames <- function(x) {
 
 
 
-replace_values <- function(x, from, to, must_have=TRUE) {
+replace_values <- function(x, from, to=NULL, must_have=TRUE) {
+	if (is.null(to)) {
+		nms <- names(from)
+		if (is.null(nms) || any(!nzchar(nms) | is.na(nms))) {
+			stop("if 'to' is NULL, 'from' must be a named vector (all elements named)")
+		}
+		to <- unname(c(from))
+		from <- nms
+	}
 	stopifnot(length(from) == length(to))
 	for (i in 1:length(from)) {
 		if (must_have) {

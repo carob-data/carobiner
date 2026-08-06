@@ -8,7 +8,7 @@ update_todo <- function(path) {
 	todo$uri <- trimws(todo$uri)
 	uri <- gsub("https://doi.org/", "doi:", tolower(todo$uri))
 	uri <- gsub("https://hdl.handle.net/", "hdl:", uri)
-	id <- tolower(sapply(uri, yuri::simpleURI, USE.NAMES=FALSE))
+	id <- tolower(sapply(uri, yuri::simpleURI, warn=FALSE, USE.NAMES=FALSE))
 
 	done <- list.files(file.path(path, "scripts"), pattern="^doi|^hdl.*\\.R$", recursive=TRUE, ignore.case=TRUE)
 	done <- grep("_draft", done, invert=TRUE, value=TRUE)
