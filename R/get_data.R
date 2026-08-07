@@ -198,7 +198,7 @@ check_carobiner_version <- function(path) {
 	TRUE
 }
 
-get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=TRUE, filter=TRUE, protocol="") {
+get_data <- function(uri, path, group, files=NULL, cache=TRUE, filter=TRUE, protocol="") {
 
 	check_carobiner_version(path)
 
@@ -221,27 +221,18 @@ get_data <- function(uri, path, group, files=NULL, cache=TRUE, recursive=TRUE, f
 		file_downloads(files, dpath, cache)
 	} else {
 		set_pwds(path)
-		suppress_filter <- FALSE
 		if (protocol == "LSMS") {
 			dpath <- file.path(dpath, uname)
 			p <- usr_pwd(path, "LSMS")
 			ff <- yuri:::get_LSMS(uri, dpath, p$username, p$password, cache=cache)
 			if (is.null(ff)) return(NULL)
 		} else {
-			ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=recursive, filter=FALSE)
-			raw_path <- file.path(dpath, uname)
-			if ((!recursive) && all(dir.exists(ff))) {
-				ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=TRUE, filter=FALSE)
-				suppress_filter <- TRUE
-			#} else if (isTRUE(auto_json_bundle) && needs_recursive_json_bundle(raw_path, uname, filter_files(ff))) {
-			#	ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, recursive=TRUE, filter=FALSE)
-			#	suppress_filter <- TRUE
-			}
+			ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, keep_folders=TRUE, filter=FALSE)
 		}
 		if (!isTRUE(length(ff) > 0)) {
 			stop("no files found")
 		}
-		if (filter && !suppress_filter) {
+		if (filter) {
 			ff <- filter_files(ff)
 		}
 		ff
