@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">carobiner</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.7-21</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.7-22</span>
       </span>
     </div>
 
@@ -44,7 +44,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_data</span><span class="op">(</span><span class="va">uri</span>, <span class="va">path</span>, <span class="va">group</span>, files<span class="op">=</span><span class="cn">NULL</span>, cache<span class="op">=</span><span class="cn">TRUE</span>, recursive<span class="op">=</span><span class="cn">FALSE</span>, filter<span class="op">=</span><span class="cn">TRUE</span>, protocol<span class="op">=</span><span class="st">""</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_data</span><span class="op">(</span><span class="va">uri</span>, <span class="va">path</span>, <span class="va">group</span>, files<span class="op">=</span><span class="cn">NULL</span>, cache<span class="op">=</span><span class="cn">TRUE</span>, filter<span class="op">=</span><span class="cn">TRUE</span>, protocol<span class="op">=</span><span class="st">""</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -64,9 +64,6 @@
 
   <dt id="arg-cache">cache<a class="anchor" aria-label="anchor" href="#arg-cache"></a></dt>
 <dd><p>logical. if <code>TRUE</code> the data are only downloaded again if they are not locally available</p></dd>
-
-  <dt id="arg-recursive">recursive<a class="anchor" aria-label="anchor" href="#arg-recursive"></a></dt>
-<dd><p>logical. if <code>TRUE</code> also return filenames in sub-directories</p></dd>
 
   <dt id="arg-filter">filter<a class="anchor" aria-label="anchor" href="#arg-filter"></a></dt>
 <dd><p>logical. if <code>TRUE</code> files that probably do not have the primary data are filtered out (files ending on .pdf, .doc(x), .json)</p></dd>
