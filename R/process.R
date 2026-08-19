@@ -16,7 +16,8 @@ sort_by_terms <- function(x, type, group) {
 		trms <- vocal::accepted_variables(c("metadata", "carob-metadata"))$name
 		trms <- c(trms, "crops", "countries")
 	} else if (type == "weather") {
-		trms <- vocal::accepted_variables("weather")$name
+		# Match check_weather(): keep general/location terms (date, time, geo, etc.)
+		trms <- vocal::accepted_variables(c("general", "location", "weather"))$name
 	} else {
 		#vars <- get_groupvars(group)
 		#trms <- vocal::accepted_variables(vars)
