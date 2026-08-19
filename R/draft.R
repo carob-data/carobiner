@@ -253,19 +253,30 @@ match_names <- function(r, n) {
 }	
 
 match_org <- function(x, xd=.25) {
-	if (length(x) == 0) {
-		return(x)
+	if (is.null(x) || length(x) == 0L) {
+		return(NA_character_)
+	}
+	x <- as.character(x)
+	x <- x[!is.na(x) & nzchar(trimws(x))]
+	if (length(x) == 0L) {
+		return(NA_character_)
 	}
 	v <- vocal::accepted_values("organization")
-	x <- trimws(unlist(strsplit(x, ";")))
-	for (i in 1:length(x)) {
-		if (x[i] == "") next
-		d <- utils::adist(x[i], v$longname)
-		if ((min(d, na.rm=TRUE) / nchar(x[i])) < xd) {
-			x[i] <- v[which.min(d), 1]
+	x <- trimws(unlist(strsplit(x, ";", fixed = TRUE), use.names = FALSE))
+	x <- x[!is.na(x) & nzchar(x)]
+	if (length(x) == 0L) {
+		return(NA_character_)
+	}
+	longname <- as.character(v$longname)
+	for (i in seq_along(x)) {
+		d <- utils::adist(x[i], longname)
+		md <- suppressWarnings(min(d, na.rm = TRUE))
+		nc <- nchar(x[i])
+		if (is.finite(md) && isTRUE(nc > 0L) && (md / nc) < xd) {
+			x[i] <- as.character(v[[1]][which.min(d)])
 		}
 	}
-	paste(x, collapse="; ")
+	paste(x, collapse = "; ")
 }
 
 
