@@ -85,7 +85,7 @@ check_pubs <- function(x, path, answ) {
 	if (isTRUE(nchar(x$publication) > 0 )) {
 		allpubs <- tolower(basename(list.files(file.path(path, "references"))))
 		publications <- tolower(trimws(unlist(strsplit(x$publication, ";|; "))))
-		for (i in 1:seq_along(publications)) {
+		for (i in seq_along(publications)) {
 			pub <- publications[i]
 			if (grepl("http", pub)) {
 				if (grepl("handle\\.net|doi\\.org", pub)) {
