@@ -36,6 +36,7 @@ grepr <- function(x) {
 		longitude = grepaste("longitude|^long", x),
 		elevation = grepaste("^elev|altitude", x),
 		treatment = grepaste("treat", x),
+		rep = grepaste("rep", x),
 		crop = grepaste("crop", x),
 		variety = grepaste("variety|variedad|cultivar|clone", x),
 		year = grepaste("year", x),
