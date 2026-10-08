@@ -3,7 +3,7 @@ agronomy,location;crop;soil,"agronomy experiments (conservation ag, intercroppin
 pest_disease,location;crop;soil,"crop pest, disease or weed management trials"
 soil_samples,location;soil,soil sampling data
 survey,location;crop;soil;survey,"household, agronomic and crop-cut surveys"
-varieties,location;crop;soil,crop variety trials (not wheat or maize)
+varieties_other,location;crop;soil,crop variety trials (not wheat or maize)
 varieties_cassava,location;crop;soil,cassava variety trials
 varieties_cowpea,location;crop;soil,cowpea variety trials
 varieties_maize,location;crop;soil;maize,maize variety trials
