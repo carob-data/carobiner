@@ -198,7 +198,7 @@ check_carobiner_version <- function(path) {
 	TRUE
 }
 
-get_data <- function(uri, path, group, files=NULL, cache=TRUE, filter=TRUE, protocol="") {
+get_data <- function(uri, path, group, files=NULL, cache=TRUE, filter=TRUE, protocol="", ...) {
 
 	check_carobiner_version(path)
 
@@ -227,7 +227,16 @@ get_data <- function(uri, path, group, files=NULL, cache=TRUE, filter=TRUE, prot
 			ff <- yuri:::get_LSMS(uri, dpath, p$username, p$password, cache=cache)
 			if (is.null(ff)) return(NULL)
 		} else {
-			ff <- yuri::dataURI(uri, dpath, unzip=TRUE, cache=cache, keep_folders=TRUE, filter=FALSE)
+			args <- list(uri = uri, path = dpath, unzip = TRUE, cache = cache,
+				keep_folders = TRUE, filter = FALSE)
+			dots <- list(...)
+			if (length(dots)) {
+				if (is.null(names(dots)) || any(!nzchar(names(dots)))) {
+					stop("additional arguments to get_data() must be named (e.g. ignore=, unzip=)", call. = FALSE)
+				}
+				args[names(dots)] <- dots
+			}
+			ff <- do.call(yuri::dataURI, args)
 		}
 		if (!isTRUE(length(ff) > 0)) {
 			stop("no files found")

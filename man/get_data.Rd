@@ -11,7 +11,7 @@ Download the files associated with a URI.
 }
 
 \usage{
-get_data(uri, path, group, files=NULL, cache=TRUE, filter=TRUE, protocol="")
+get_data(uri, path, group, files=NULL, cache=TRUE, filter=TRUE, protocol="", ...)
 }
  
 
@@ -23,6 +23,7 @@ get_data(uri, path, group, files=NULL, cache=TRUE, filter=TRUE, protocol="")
   \item{cache}{logical. if \code{TRUE} the data are only downloaded again if they are not locally available}
   \item{filter}{logical. if \code{TRUE} files that probably do not have the primary data are filtered out (files ending on .pdf, .doc(x), .json)}
   \item{protocol}{character; use \code{"LSMS"} for LSMS (\code{\link{usr_pwd}}) downloads}
+  \item{\dots}{additional arguments passed to \code{yuri::dataURI}, e.g. \code{ignore = "file.zip"} or \code{unzip = FALSE}. These override get_data defaults (\code{unzip=TRUE}, \code{keep_folders=TRUE}).}
 }
 
 \value{

@@ -8,5 +8,6 @@ varieties_cassava,location;crop;soil,cassava variety trials
 varieties_cowpea,location;crop;soil,cowpea variety trials
 varieties_maize,location;crop;soil;maize,maize variety trials
 varieties_potato,location;crop;soil,potato variety trials
+varieties_sorghum,location;crop;soil,sorghum variety trials
 varieties_wheat,location;crop;soil;wheat,wheat variety trials
 weather,location;weather,weather data
