@@ -10,7 +10,7 @@ get_function <- function(name, path, group="") {
 }
 
 
-sort_by_terms <- function(x, type, group) {
+sort_by_terms <- function(x, type, group, keep_extra=FALSE) {
 	if (is.null(x)) return(x)
 	if (type == "metadata") {
 		trms <- vocal::accepted_variables(c("metadata", "carob-metadata"))$name
@@ -23,8 +23,14 @@ sort_by_terms <- function(x, type, group) {
 		#trms <- vocal::accepted_variables(vars)
 		trms <- vocal::accepted_variables()$name
 	}
-	trms <- unique(trms[trms %in% names(x)])
-	x[, trms]
+	known <- unique(trms[trms %in% names(x)])
+	if (keep_extra) {
+		# extra variables are kept in individual clean files and dropped at compile
+		extra <- setdiff(names(x), known)
+		x[, c(known, extra), drop=FALSE]
+	} else {
+		x[, known, drop=FALSE]
+	}
 }
 
 
@@ -204,6 +210,7 @@ compile_carob <- function(path, group="", split_license=FALSE, zip=FALSE, excel=
 
 		mi <- grepl("_meta.csv$", ff)
 		li <- grepl("_long.csv$", ff)
+		# drop variables that are not in the vocabulary (kept in individual clean files)
 		x <- sort_by_terms(.binder(ff[mi]), "metadata", grp)
 		x[is.na(x)] <- ""
 		x[] <- sapply(x, function(i) gsub("\n", " ", i))

@@ -87,11 +87,11 @@ write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, var_meta
 		wide$record_id <- 1:nrow(wide)
 	}
 	
-	wide <- sort_by_terms(wide, "records", group)
-	metadata <- sort_by_terms(metadata, "metadata", group)
-	long <- sort_by_terms(long, "longrecs", group)
-	wth <- sort_by_terms(wth, "weather", group)
-	var_meta <- sort_by_terms(var_meta, "soil", group)
+	wide <- sort_by_terms(wide, "records", group, keep_extra=TRUE)
+	metadata <- sort_by_terms(metadata, "metadata", group, keep_extra=TRUE)
+	long <- sort_by_terms(long, "longrecs", group, keep_extra=TRUE)
+	wth <- sort_by_terms(wth, "weather", group, keep_extra=TRUE)
+	var_meta <- sort_by_terms(var_meta, "soil", group, keep_extra=TRUE)
 
 	if (nrow(wide) > 0) {
 		metadata$crops <- paste(sort(unique(wide$crop)), collapse=";")
