@@ -237,10 +237,10 @@ make_reports <- function(path, group="", cache=TRUE) {
 	
 	for (grp in group) {
 		gpath <- file.path(path, "/data/compiled/")
-		ff <- file.path(gpath, paste0("carob_", grp, ".csv"))
+		ff <- file.path(gpath, paste0("carob_", grp, "_latest.csv"))
 		if (!file.exists(ff)) next
 		
-		outf <- gsub(".csv", ".html", ff)
+		outf <- gsub("_latest.csv", ".html", ff)
 		if (cache) {
 			i <- file.exists(outf)
 			j <- which(i)
