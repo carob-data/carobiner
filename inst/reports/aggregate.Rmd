@@ -23,9 +23,9 @@ ktab <- function(data, caption) {
     kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
 }
 
-group <- "crop_cuts"
+group <- "agronomy"
 
-f <- paste0("data/compiled/carob_", group, ".csv")
+f <- paste0("data/compiled/carob_", group, "_latest.csv")
 if (!file.exists(f)) {
   knitr::knit_exit()
 }
