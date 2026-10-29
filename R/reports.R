@@ -58,7 +58,7 @@ clean_up <- function(fin, fout) {
 make_report <- function(records, metadata = NULL, issues = NULL, group = "",
 	path = NULL, file = NULL, check = "nogeo", open = FALSE) {
 	if (!requireNamespace("rmarkdown", quietly = TRUE)) {
-		stop("package 'rmarkdown' is required for make_report_rmd", call. = FALSE)
+		stop("package 'rmarkdown' is required to make reports", call. = FALSE)
 	}
 	if (!is.data.frame(records)) {
 		records <- as.data.frame(records, stringsAsFactors = FALSE)

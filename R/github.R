@@ -9,6 +9,7 @@ all_github_scripts <- function() {
 	note <- rep("", length(ff))
 	note[grepl("(^|/)_pending/", ff)]  <- "to be completed"
 	note[grepl("(^|/)_rejected/", ff)] <- "REJECTED"
+	note[grepl("(^|/)_todo/", ff)] <- "to do"
 	uri <- .github_script_key(ff)
 	data.frame(uri=uri, file=ff, note=note)
 }

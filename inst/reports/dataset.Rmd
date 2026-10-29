@@ -130,7 +130,7 @@ if (grepl("CC", license)) {
 } else if (grepl("unknown", license)) {
 	dwnl <- paste0(" Because of the license is not specified, you need to run the script yourself to get the standardized data.")
 } else {
-	dwnl <- paste0(" Because of the restrictions of this license, you need to run the script yourself to get the standardized data.")
+	dwnl <- paste0(" Because of the restrictions of this license, you need to run the script yourself to get the standardized data. For example with caramba::carob_dataset(\"", uri, "\")")
 } 
 
 ```

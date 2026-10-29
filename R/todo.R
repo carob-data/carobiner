@@ -11,7 +11,7 @@ update_todo <- function(path) {
 	id <- tolower(sapply(uri, yuri::simpleURI, warn=FALSE, USE.NAMES=FALSE))
 
 	done <- list.files(file.path(path, "scripts"), pattern="^doi|^hdl.*\\.R$", recursive=TRUE, ignore.case=TRUE)
-	done <- grep("_draft", done, invert=TRUE, value=TRUE)
+	done <- grep("_draft|_todo|_rejected|_pending|_AI", done, invert=TRUE, value=TRUE)
 	done <- gsub("\\.r$", "", tolower(basename(done)))
 	done <- gsub(" ", "", done)
 	id <- gsub(" ", "", id)
