@@ -360,9 +360,11 @@ process_carob <- function(path, group="", quiet=FALSE, check=NULL, cache=TRUE, p
 	ffR <- list.files(file.path(base, group), pattern="\\.R$", full.names=TRUE, recursive=TRUE)
 	ff_un <- grepl("^_", basename(ffR))
 	ffR <- ffR[!ff_un]
-	ffR <- ffR[!grepl("/_pending/|/_draft/|/_rejected/|/_AI/|/_todo/", ffR)]
+	ffR <- ffR[!grepl(.carob_skip_script_re, ffR)]
 	#ffR <- ffR[!grepl("/_removed/", ffR)]
 	#ffR <- ffR[basename(ffR) != "template.R"]
+
+	.carob_drop_unpublished_compiled(path)
 
 	if (length(ffR) == 0) {
 		return(invisible(TRUE))
@@ -412,6 +414,8 @@ process_carob <- function(path, group="", quiet=FALSE, check=NULL, cache=TRUE, p
 		file.remove(fcsv)
 		fmsg <- list.files(file.path(path, "data", "messages", group), pattern="\\.csv$", recursive=TRUE, full.names=TRUE)
 		file.remove(fmsg)
+		feval <- list.files(file.path(path, "data", "evaluation", group), pattern="\\.csv$", recursive=TRUE, full.names=TRUE)
+		file.remove(feval)
 	}
 
 	ffR <- sort(ffR)
@@ -440,9 +444,11 @@ process_carob <- function(path, group="", quiet=FALSE, check=NULL, cache=TRUE, p
 	}
 	
 	ffm <- list.files(file.path(path, "data", "messages"), pattern=".csv$", full.names=TRUE, recursive=TRUE)
-	msg <- lapply(ffm, utils::read.csv)
-	msg <- do.call(rbind, msg)
-	utils::write.csv(msg, file.path(path, "data", "messages.csv"), row.names=FALSE)
+	if (length(ffm) > 0) {
+		msg <- lapply(ffm, utils::read.csv)
+		msg <- data.table::rbindlist(msg, fill=TRUE)
+		utils::write.csv(as.data.frame(msg), file.path(path, "data", "messages.csv"), row.names=FALSE)
+	}
 
 	update_todo(path)
 	invisible(TRUE)

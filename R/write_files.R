@@ -1,5 +1,54 @@
 
 
+.carob_skip_script_re <- "/(_pending|_draft|_rejected|_AI|_todo)/"
+
+
+.carob_unpublished_script <- function(path, id) {
+	if (is.null(path) || !nzchar(path) || is.null(id) || !nzchar(id)) return(FALSE)
+	pat <- paste0("^", gsub(".", "\\.", id, fixed = TRUE), "\\.R$")
+	ff <- list.files(file.path(path, "scripts"), pattern = pat, recursive = TRUE, full.names = TRUE)
+	if (length(ff) == 0L) return(FALSE)
+	skip <- grepl(.carob_skip_script_re, ff)
+	any(skip) && !any(!skip)
+}
+
+
+.carob_compiled_stem <- function(filename) {
+	s <- sub("(_meta_variable|_meta|_long|_wth)?\\.csv$", "", basename(filename), ignore.case = TRUE)
+	sub("_nodata$", "", s, ignore.case = TRUE)
+}
+
+
+.carob_remove_compiled <- function(path, id) {
+	if (is.null(path) || is.null(id) || !nzchar(id)) return(invisible())
+	idre <- paste0("^", gsub(".", "\\.", id, fixed = TRUE), "(\\.csv|_)")
+	for (kind in c("clean", "messages", "evaluation")) {
+		base <- file.path(path, "data", kind)
+		if (!dir.exists(base)) next
+		ff <- list.files(base, pattern = idre, full.names = TRUE, recursive = TRUE, ignore.case = TRUE)
+		if (length(ff) > 0L) file.remove(ff)
+	}
+	invisible()
+}
+
+
+.carob_drop_unpublished_compiled <- function(path) {
+	ffR <- list.files(file.path(path, "scripts"), pattern = "\\.R$", recursive = TRUE, full.names = TRUE)
+	ffR <- ffR[!grepl(.carob_skip_script_re, ffR)]
+	keep <- tolower(gsub("\\.R$", "", basename(ffR)))
+	for (kind in c("clean", "messages", "evaluation")) {
+		base <- file.path(path, "data", kind)
+		if (!dir.exists(base)) next
+		ff <- list.files(base, pattern = "\\.csv$", recursive = TRUE, full.names = TRUE)
+		if (length(ff) == 0L) next
+		stem <- tolower(.carob_compiled_stem(ff))
+		drop <- !stem %in% keep
+		if (any(drop)) file.remove(ff[drop])
+	}
+	invisible()
+}
+
+
 write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, var_meta=NULL, options=NULL) {
 
 	group <- metadata$carob_group
@@ -23,14 +72,22 @@ write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, var_meta
 		to_mem <- TRUE
 	}
 
+	# Scripts under _todo/_draft/_rejected/_pending/_AI must not write compiled output.
+	unpublished <- !to_mem && .carob_unpublished_script(path, cleanuri)
+
 	if (!to_mem) {
-		dir.create(file.path(path, "data", "clean"), FALSE, FALSE)
-		file.remove(list.files(file.path(path, "data", "clean", group), cleanuri, full.names=TRUE))
+		if (unpublished) {
+			.carob_remove_compiled(path, cleanuri)
+		} else {
+			dir.create(file.path(path, "data", "clean"), FALSE, FALSE)
+			file.remove(list.files(file.path(path, "data", "clean", group), cleanuri, full.names=TRUE))
+		}
 
 		if (missing(wide)) {
 			if (!grepl("_nodata$", cleanuri)) {
 				stop("wide records missing")
 			}
+			if (unpublished) return(TRUE)
 			d <- data.frame(ignore=TRUE)
 			outf <- file.path(path, "data", "clean", group, paste0(cleanuri, ".csv"))
 			utils::write.csv(d, outf, row.names=FALSE)	
@@ -41,19 +98,21 @@ write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, var_meta
 	}
 
 	if (nrow(wide) > 0) {
-		dir.create(file.path(path, "data", "messages", group), FALSE, TRUE)
-		dir.create(file.path(path, "data", "evaluation", group), FALSE, TRUE)
 		wide$dataset_id <- metadata$dataset_id
 		opt <- options("carobiner_check")
-		answ <- check_terms(wide, metadata, long, wth, var_meta, group, check=opt)	
-		fmsg <- file.path(path, "data", "messages", group, paste0(cleanuri, ".csv"))
-		if (file.exists(fmsg)) file.remove(fmsg)
-		
-		feval <- file.path(path, "data", "evaluation", group, paste0(cleanuri, ".csv"))
-		if (file.exists(feval)) file.remove(feval)
-		e <- evaluate_quality(wide, group)	
-		data.table::fwrite(e, feval, row.names=FALSE)		
-		
+		answ <- check_terms(wide, metadata, long, wth, var_meta, group, check=opt)
+
+		if (!unpublished) {
+			dir.create(file.path(path, "data", "messages", group), FALSE, TRUE)
+			dir.create(file.path(path, "data", "evaluation", group), FALSE, TRUE)
+			fmsg <- file.path(path, "data", "messages", group, paste0(cleanuri, ".csv"))
+			if (file.exists(fmsg)) file.remove(fmsg)
+			feval <- file.path(path, "data", "evaluation", group, paste0(cleanuri, ".csv"))
+			if (file.exists(feval)) file.remove(feval)
+			e <- evaluate_quality(wide, group)
+			data.table::fwrite(e, feval, row.names=FALSE)
+		}
+
 		if (!to_mem) {
 			answ <- check_pubs(metadata, path, answ)
 		}
@@ -61,7 +120,9 @@ write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, var_meta
 		if (nrow(answ) > 0) {
 			answ$group <- group
 			answ$dataset_id <- cleanuri
-			answ$contributor <- metadata$carob_contributor
+			cc <- metadata$carob_contributor
+			if (is.null(cc) || length(cc) == 0L) cc <- NA_character_
+			answ$contributor <- cc
 
 			fign <- file.path(path, "scripts", group, "ignore.csv")
 			if (file.exists(fign)) {
@@ -74,7 +135,9 @@ write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, var_meta
 				}
 			}
 			if (nrow(answ) > 0) {
-				data.table::fwrite(answ, fmsg, row.names=FALSE)
+				if (!unpublished) {
+					data.table::fwrite(answ, fmsg, row.names=FALSE)
+				}
 				for (i in 1:nrow(answ)) {
 					message(paste0("    ", answ$check[i], ": ", answ$msg[i]))
 				}
@@ -100,6 +163,9 @@ write_files <- function(path=NULL, metadata, wide, long=NULL, wth=NULL, var_meta
 	
 	if (to_mem) {
 		return(list(meta=metadata, wide=wide, long=long))
+	}
+	if (unpublished) {
+		return(TRUE)
 	}
 	
 	outf <- file.path(path, "data", "clean", group, paste0(cleanuri, ".csv"))
