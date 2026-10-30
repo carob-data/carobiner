@@ -251,8 +251,10 @@ check_metadata <- function(x, answ) {
 		answ[nrow(answ)+1, ] <- c("uri", "http in uri")
 	}
 	if (isTRUE(x$carob_date > "2026-07-01")) {
-		if (is.null(x$carob_effort) || (is.na(x$carob_effort) & (is.na(x$carob_LLM)))) {
-			answ[nrow(answ)+1, ] <- c("metadata", "carob_effort not valid")			
+		no_effort <- is.null(x$carob_effort) || length(x$carob_effort) == 0L || anyNA(x$carob_effort)
+		no_llm <- is.null(x$carob_LLM) || length(x$carob_LLM) == 0L || anyNA(x$carob_LLM)
+		if (no_effort && no_llm) {
+			answ[nrow(answ)+1, ] <- c("metadata", "carob_effort not valid")
 		}
 		if (is.null(x$carob_completion) || is.na(x$carob_completion)) {
 			answ[nrow(answ)+1, ] <- c("metadata", "carob_completion not valid")			
