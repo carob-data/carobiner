@@ -251,7 +251,7 @@ check_metadata <- function(x, answ) {
 		answ[nrow(answ)+1, ] <- c("uri", "http in uri")
 	}
 	if (isTRUE(x$carob_date > "2026-07-01")) {
-		if (is.null(x$carob_effort) || is.na(x$carob_effort)) {
+		if (is.null(x$carob_effort) || (is.na(x$carob_effort) & (is.na(x$carob_LLM)))) {
 			answ[nrow(answ)+1, ] <- c("metadata", "carob_effort not valid")			
 		}
 		if (is.null(x$carob_completion) || is.na(x$carob_completion)) {
@@ -438,7 +438,7 @@ check_terms <- function(records=NULL, metadata=NULL, longrecs=NULL, wth=NULL, so
 	if (!is.null(metadata)) {
 		answ <- check_metadata(metadata, answ)
 		answ <- missing_required_variables(answ, names(metadata), group, TRUE)
-		if (!group %in% c("survey", "soil_samples")) {
+		if (!group %in% c("survey", "soil_samples", "weather")) {
 			if (!is.null(metadata$treatment_vars)) {
 				answ <- check_treatments(answ, metadata$treatment_vars, metadata$data_type, recnms, records, "treatment")
 			}

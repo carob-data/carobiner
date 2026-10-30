@@ -24,6 +24,12 @@ evaluate_quality <- function(x, group) {
 	if (group == "survey") {
 		reqs <- reqs[-c(1:2)]
 	}
+	if (group == "weather") {
+		reqs <- c("latitude", "longitude", "location")
+		reqs1 <- reqs
+		reqs2 <- character()
+		reqsout <- reqs
+	}
 	if (is.null(x[["geo_from_source"]])) x[["geo_from_source"]] <- NA
 	out <- data.frame(matrix(nrow=1, ncol=length(reqsout)))
 	names(out) <- reqsout
@@ -44,8 +50,10 @@ evaluate_quality <- function(x, group) {
 	for (r in reqs1) {
 		out[[r]] <- mean(!is.na(x[[r]]))
 	}
-	out$adm <- max(colMeans(!is.na(x[, grep("adm", names(x))])))
-	out$yield <- max(colMeans(!is.na(x[, grep("yield", names(x))])))
+	if (group != "weather") {
+		out$adm <- max(colMeans(!is.na(x[, grep("adm", names(x))])))
+		out$yield <- max(colMeans(!is.na(x[, grep("yield", names(x))])))
+	}
 	
 	data.frame(dataset_id = x$dataset_id[1], out)
 }
