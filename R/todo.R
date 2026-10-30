@@ -43,7 +43,8 @@ update_todo <- function(path) {
 	id <- tolower(sapply(uri, yuri::simpleURI, warn=FALSE, USE.NAMES=FALSE))
 
 	done <- list.files(file.path(path, "scripts"), pattern="^doi|^hdl.*\\.R$", recursive=TRUE, ignore.case=TRUE)
-	done <- grep("_draft|_todo|_pending|_AI", done, invert=TRUE, value=TRUE)
+	# Match the holding folders only. A bare "_AI" also matches DOI stems such as AIS9XM.
+	done <- grep("(^|/)_(draft|todo|pending|AI)(/|$)", done, invert=TRUE, value=TRUE)
 	done <- gsub("\\.r$", "", tolower(basename(done)))
 	done <- gsub(" ", "", done)
 	id <- gsub(" ", "", id)
