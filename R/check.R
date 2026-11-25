@@ -50,18 +50,21 @@ check_cropyield <- function(x, answ) {
 	if (all(is.na(x$yield))) return(answ)
 	x <- x[, c("crop", "yield")]
 	x <- stats::na.omit(x)
+	x <- x[x$crop != "none", , drop=FALSE]
 	if (nrow(x) == 0) {
 		return(answ)
 	}
-	a <- suppressWarnings(
-			stats::aggregate(x[,"yield", drop=FALSE], x[, "crop", drop=FALSE], max, na.rm=TRUE)
-		)
-	a <- a[which(a$yield < 100), ]
+	a <- stats::aggregate(x[,"yield", drop=FALSE], x[, "crop", drop=FALSE], max, na.rm=TRUE)
+	az <- a[which(a$yield == 0), ]
+	if (nrow(az) > 0) {
+		bad <- paste(unique(az$crop), collapse=", ")
+		answ[nrow(answ)+1, ] <- c("zero yield", bad)
+	}
+	a <- a[which(a$yield > 0 & a$yield < 100), ]
 	if (nrow(a) > 0) {
 		crops <- unique(a$crop)
 		bad <- paste(crops, collapse=", ")
 		answ[nrow(answ)+1, ] <- c("low yield (tons not kg?)", bad)
-		return(answ)
 	}
 	trms <- vocal::accepted_values("crop")
 	trms <- trms[match(unique(x$crop), trms$name), c("name", "max_yield")]
@@ -310,7 +313,10 @@ check_records <- function(answ, x, group, check="all", dupid=TRUE) {
 	}
 	locvars <- c(paste0("adm", 1:5), "site", "location")
 	locvars <- locvars[locvars %in% names(x)]
-	answ <- rbind(answ, vocal::check_caps(x, locvars, minchar=5, frac=0.1))
+	capvars <- locvars[vapply(locvars, function(v) length(unique(stats::na.omit(x[[v]]))) > 3, logical(1))]
+	if (length(capvars) > 0) {
+		answ <- rbind(answ, vocal::check_caps(x, capvars, minchar=5, frac=0.1))
+	}
 	if (("site" %in% locvars) & (!("location" %in% locvars))) {
 		answ[nrow(answ)+1, ] <- c("location/site", "variable 'site' is not allowed if variable 'location' is absent")
 	}

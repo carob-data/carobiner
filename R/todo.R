@@ -56,6 +56,9 @@ update_todo <- function(path) {
 		if (is.na(last_pr)) last_pr <- 0
 	}
 
+	# The same removal runs on GitHub Actions when a pull request is opened
+	# (.github/workflows/todo-list.yml). This pass covers a checkout that
+	# has not picked up that commit yet.
 	pr <- character()
 	out <- try(.github_open_pr_ids(last_pr=last_pr), silent=TRUE)
 	if (!inherits(out, "try-error")) {

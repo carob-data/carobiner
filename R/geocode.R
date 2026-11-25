@@ -170,4 +170,111 @@ geocode <- function(country, location, adm1=NULL, adm2=NULL, adm3=NULL, adm4=NUL
 }
 
 #g <- geocode("Kenya", c("Machakos", "Nairobi"))
-  
+
+
+dms_to_dd <- function(d, m=0, s=0, hem=NULL, default_hem=NULL) {
+	if (!is.null(default_hem)) {
+		default_hem <- toupper(trimws(as.character(default_hem)))
+		if (length(default_hem) != 1L || !(default_hem %in% c("N", "S", "E", "W"))) {
+			stop("default_hem must be one of 'N', 'S', 'E', or 'W'", call.=FALSE)
+		}
+	}
+
+	validate_hem <- function(h, default_hem) {
+		valid <- c("N", "S", "E", "W")
+		bad <- !is.na(h) & !(h %in% valid)
+		if (any(bad)) {
+			warning("invalid hemisphere value(s): ", paste(unique(h[bad]), collapse=", "), call.=FALSE)
+			h[bad] <- NA_character_
+		}
+		present <- unique(h[!is.na(h)])
+		if (any(present %in% c("N", "S")) && any(present %in% c("E", "W"))) {
+			warning("mixed latitude (N/S) and longitude (E/W) hemispheres in one vector", call.=FALSE)
+		}
+		if (!is.null(default_hem)) {
+			if ((default_hem %in% c("N", "S") && any(present %in% c("E", "W"))) ||
+				(default_hem %in% c("E", "W") && any(present %in% c("N", "S")))) {
+				stop("default_hem ('", default_hem, "') does not match hemisphere axis in data", call.=FALSE)
+			}
+		}
+		h
+	}
+
+	# Single-argument DMS string mode
+	if (missing(m) && missing(s) && is.null(hem)) {
+		if (is.numeric(d)) {
+			return(as.numeric(d))
+		}
+		x <- trimws(as.character(d))
+		out <- rep(NA_real_, length(x))
+		h_all <- rep(NA_character_, length(x))
+		for (i in seq_along(x)) {
+			z <- x[i]
+			if (is.na(z) || !nzchar(z)) next
+			z <- toupper(z)
+			z <- gsub("[\u2032\u2019]", "'", z)
+			z <- gsub("[\u2033\u201C\u201D]", "\"", z)
+			hm <- regmatches(z, regexpr("[NSEW]", z))
+			h <- if (length(hm) == 1L && nzchar(hm)) hm else NA_character_
+			h_all[i] <- h
+			neg <- grepl("^-", z)
+			ms <- gregexpr("[0-9]+(?:\\.[0-9]+)?", z)
+			nums <- as.numeric(regmatches(z, ms)[[1]])
+			if (length(nums) == 0L || length(nums) > 3L || any(is.na(nums))) next
+			deg <- nums[1]
+			min <- if (length(nums) >= 2L) nums[2] else 0
+			sec <- if (length(nums) >= 3L) nums[3] else 0
+			val <- deg + min / 60 + sec / 3600
+			if (is.na(h) && !is.null(default_hem)) {
+				h <- default_hem
+			}
+			if (!is.na(h)) {
+				if (h %in% c("S", "W")) val <- -val
+			} else if (neg) {
+				val <- -val
+			}
+			out[i] <- val
+		}
+		validate_hem(h_all, default_hem)
+		return(out)
+	}
+
+	# Component vector mode (d, m, s, hem)
+	clean_num <- function(v) {
+		if (is.numeric(v)) return(as.numeric(v))
+		v <- trimws(as.character(v))
+		v[v %in% c("", ".", "NA", "na")] <- NA_character_
+		as.numeric(v)
+	}
+	dn <- clean_num(d)
+	mn <- clean_num(m)
+	sn <- clean_num(s)
+	n <- length(dn)
+	if (length(mn) == 1L) mn <- rep(mn, n)
+	if (length(sn) == 1L) sn <- rep(sn, n)
+
+	dec <- abs(dn) + mn / 60 + sn / 3600
+	if (!is.null(hem)) {
+		h <- toupper(trimws(as.character(hem)))
+		h[h %in% c("", ".", "NA")] <- NA_character_
+		h <- validate_hem(h, default_hem)
+		miss <- is.na(h) & !is.na(dec)
+		if (any(miss)) {
+			if (!is.null(default_hem)) {
+				h[miss] <- default_hem
+			} else {
+				warning("missing hemisphere value(s) with no default_hem; returning NA", call.=FALSE)
+				dec[miss] <- NA_real_
+			}
+		}
+		dec[!is.na(h) & h %in% c("S", "W")] <- -dec[!is.na(h) & h %in% c("S", "W")]
+		dec[is.na(h)] <- NA_real_
+	} else if (!is.null(default_hem)) {
+		if (default_hem %in% c("S", "W")) {
+			dec <- -dec
+		}
+	} else {
+		dec[!is.na(dn) & dn < 0] <- -dec[!is.na(dn) & dn < 0]
+	}
+	dec
+}
