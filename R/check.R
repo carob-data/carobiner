@@ -146,7 +146,7 @@ check_longrecs <- function(answ, longrecs, records) {
 	}
 	cns <- c(colnames(records), colnames(longrecs))
 
-	expected <- c("date", "depth", "depth_top", "depth_bottom", "DAP", "disease", "animals"	)
+	expected <- c("date", "depth", "depth_top", "depth_bottom", "DAP", "disease", "animals", "wavenumber")
 	if (!any(cns %in% expected)) {
 		answ[nrow(answ)+1, ] <- c("time/depth", "no time/depth variables in long records?")	
 	}
