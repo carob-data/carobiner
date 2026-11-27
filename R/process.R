@@ -327,7 +327,15 @@ run_carob <- function(cleanuri, path, group="", quiet=FALSE) {
 	if (!exists("carob_script")) {
 		stop(" ", basename(f), " does not have a 'carob_script' function", call.=FALSE)
 	}
-	if (!carob_script(path)) {
+	ok <- tryCatch(
+		carob_script(path),
+		carob_version_updated = function(e) {
+			message("  ", conditionMessage(e), " (retrying)")
+			utils::flush.console()
+			carob_script(path)
+		}
+	)
+	if (!ok) {
 		cat(paste(" ", basename(f), " failed\n"))
 	}
 	invisible(TRUE)
@@ -436,7 +444,14 @@ process_carob <- function(path, group="", quiet=FALSE, check=NULL, cache=TRUE, p
 			stop(basename(f), " does not have a 'carob_script' function", call.=FALSE)
 		}
 		ok <- FALSE
-		try(ok <- carob_script(path))
+		try(ok <- tryCatch(
+			carob_script(path),
+			carob_version_updated = function(e) {
+				message("  ", conditionMessage(e), " (retrying)")
+				utils::flush.console()
+				carob_script(path)
+			}
+		))
 		if (!ok) {
 			message(paste("  processing failed: ", basename(f)))
 		}

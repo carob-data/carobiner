@@ -17,29 +17,65 @@
 	}
 }
 
-checkVersion <- function(vmeta, major, minor, fpath) {
+checkVersion <- function(vmeta, major, minor, fpath, uri=NULL, path=NULL, group=NULL) {
 	if (is.na(vmeta)) {
 		if (!(is.na(major) && is.na(minor))) {
 			stop(paste("version supplied where there is none? You can use 'NA'"), call.=FALSE)			
 		}
-	} else {
-		v <- c(unlist(strsplit(vmeta, "\\.")), NA)
-		if (!identical(v[1:2], as.character(c(major, minor)))) {
-			if (!is.na(minor)) {
-				major <- paste0(major, ".", minor)
-			}
-			if (isTRUE(.carob_environment$purge)) {
-				if (as.numeric(major) > as.numeric(vmeta)) {
-					#file.remove(list.files(fpath, full.names=TRUE, include.dirs=FALSE))
-					unlink(fpath)
-					stop(paste0("version ", major, " in script but version ", vmeta, " reported by data. Cache was cleared, run again"), call.=FALSE)	
+		return(FALSE)
+	}
+	v <- c(unlist(strsplit(vmeta, "\\.")), NA)
+	if (identical(v[1:2], as.character(c(major, minor)))) {
+		return(FALSE)
+	}
+
+	req_v <- if (!is.na(minor)) paste0(major, ".", minor) else as.character(major)
+
+	if (!is.null(uri) && !is.null(path) && nzchar(path) && !is.null(group)) {
+		pat <- basename(fpath)
+		jf <- file.path(fpath, paste0(pat, ".json"))
+		if (file.exists(jf)) {
+			test <- try(is_current(jf), silent = TRUE)
+			if (is.list(test)) {
+				if (identical(as.character(c(test$major, test$minor)), as.character(c(major, minor)))) {
+					closed <- test$closed
+					if (!is.null(closed) && !is.na(closed) && nzchar(closed)) {
+						stop(paste0("version ", req_v, " in script is closed on server (", closed, "); keeping cached version ", vmeta), call.=FALSE)
+					}
+					dd <- file.path(path, "data", "clean", group)
+					p <- archive_old_version(fpath, test$old, dd)
+					dl <- try(get_data(uri, path, group, cache=FALSE, filter=FALSE), silent=TRUE)
+					if (inherits(dl, "try-error") || !file.exists(file.path(fpath, "ok.txt"))) {
+						err <- if (inherits(dl, "try-error")) trimws(as.character(dl)) else "download did not complete"
+						restore_archived_version(fpath, p, dd)
+						stop(paste0("version ", req_v, " exists on server, but download failed (", err, "); kept cached version ", vmeta), call.=FALSE)
+					}
+					message(paste0("updated ", pat, " ", test$old, " -> ", test$new, " (old files archived in ", test$old, ")"))
+					utils::flush.console()
+					old_rel <- raw_data_filenames(p, pat, exclude_clean = TRUE)
+					new_rel <- raw_data_filenames(fpath, pat, exclude_clean = FALSE)
+					if (!setequal(old_rel, new_rel)) {
+						return("files_changed")
+					}
+					return(TRUE)
 				} else {
-					stop(paste0("version ", major, " in script but version ", vmeta, " reported by data. Fix script."), call.=FALSE)					
+					stop(paste0("version ", req_v, " in script, ", vmeta, " in cached data, and ", test$new, " on server. Fix script."), call.=FALSE)
 				}
+			} else if (isTRUE(test)) {
+				stop(paste0("version ", req_v, " in script does not match latest version on server (", vmeta, "). Fix script."), call.=FALSE)
 			}
-			stop(paste0("version ", major, " in script but version ", vmeta, " reported by data. Fix script or remove files with `get_data(, cache=FALSE`"), call.=FALSE)	
 		}
 	}
+
+	if (isTRUE(.carob_environment$purge)) {
+		if (as.numeric(req_v) > as.numeric(vmeta)) {
+			unlink(fpath)
+			stop(paste0("version ", req_v, " in script but version ", vmeta, " reported by data. Cache was cleared, run again"), call.=FALSE)	
+		} else {
+			stop(paste0("version ", req_v, " in script but version ", vmeta, " reported by data. Fix script."), call.=FALSE)					
+		}
+	}
+	stop(paste0("version ", req_v, " in script but version ", vmeta, " reported by data. Fix script or remove files with `get_data(, cache=FALSE`"), call.=FALSE)	
 }
 
 get_metadata <- function(uri, path, group, major, minor, ...) {
@@ -58,8 +94,22 @@ get_metadata <- function(uri, path, group, major, minor, ...) {
 	
 	draft <- isTRUE(d$draft)	
 	if (!draft) {
-		checkVersion(m$version, major=major, minor=minor, file.path(jpath, dataset_id))
-		#m$publisher <- NULL 
+		old_v <- m$version
+		fpath <- file.path(jpath, dataset_id)
+		upd <- checkVersion(old_v, major=major, minor=minor, fpath=fpath, uri=uri, path=path, group=group)
+		if (isTRUE(upd) || identical(upd, "files_changed")) {
+			m <- yuri::extract_metadata(uri, jpath)
+			m$carob_group <- group
+			checkVersion(m$version, major=major, minor=minor, fpath=fpath)
+			if (identical(upd, "files_changed")) {
+				cond <- structure(
+					list(message = paste0("updated ", dataset_id, " from ", old_v, " to ", m$version,
+						" (old files archived in old_", old_v, "); filenames changed, run script again")),
+					class = c("carob_version_updated", "error", "condition")
+				)
+				stop(cond)
+			}
+		}
 	}
 	d$draft <- NULL
 	
