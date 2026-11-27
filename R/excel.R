@@ -1,11 +1,17 @@
 
 is_excel <- function(f) {
+	if (length(f) != 1L || is.na(f) || !nzchar(f) || !file.exists(f)) {
+		return(FALSE)
+	}
 	v <- readBin(f, "raw", n=4)
-	all(as.numeric(v) == c(80, 75, 3, 4))
+	length(v) == 4L && all(as.numeric(v) == c(80, 75, 3, 4))
 }
 
 
 is_biff2 <- function(f) {
+	if (length(f) != 1L || is.na(f) || !nzchar(f) || !file.exists(f)) {
+		return(FALSE)
+	}
 	v <- readBin(f, "raw", n=4)
 	length(v) == 4L && all(v[1:2] == as.raw(c(0x09, 0x00)))
 }
@@ -107,10 +113,18 @@ read.biff2 <- function(f, col_names=TRUE, skip=0L, na="", fix_names=FALSE, lower
 
 
 read.excel <- function(f, fix_names=FALSE, lower=FALSE, ...) {
+	if (length(f) != 1L || is.na(f) || !nzchar(f)) {
+		stop("f must be a single file path (got length ", length(f), ")", call. = FALSE)
+	}
+	if (!file.exists(f)) {
+		stop("file does not exist: ", f, call. = FALSE)
+	}
 	x <- tryCatch(
 		suppressMessages(as.data.frame(readxl::read_excel(f, ...))),
 		error = function(e) {
-			if (is_biff2(f)) {
+			if (is_excel(f) && !grepl("\\.xlsx$", f, ignore.case = TRUE)) {
+				suppressMessages(as.data.frame(readxl::read_xlsx(f, ...)))
+			} else if (is_biff2(f)) {
 				dots <- list(...)
 				read.biff2(
 					f,
@@ -133,6 +147,12 @@ read.excel <- function(f, fix_names=FALSE, lower=FALSE, ...) {
 }
 
 read.excel.hdr <- function(f, skip, hdr=1, fix_names=TRUE, lower=FALSE, ...) {
+	if (length(f) != 1L || is.na(f) || !nzchar(f)) {
+		stop("f must be a single file path (got length ", length(f), ")", call. = FALSE)
+	}
+	if (!file.exists(f)) {
+		stop("file does not exist: ", f, call. = FALSE)
+	}
 	skip <- as.integer(skip)
 	hdr <- as.integer(hdr)
 	if ((skip==0) && (hdr==1)) {
@@ -141,8 +161,9 @@ read.excel.hdr <- function(f, skip, hdr=1, fix_names=TRUE, lower=FALSE, ...) {
 	stopifnot(skip >= 0)
 	stopifnot(hdr >= 1)
 	stopifnot(skip >= hdr)
-	suppressMessages(x <- as.data.frame(readxl::read_excel(f, skip=skip, ...)))
-	suppressMessages(nms <- as.data.frame(readxl::read_excel(f, skip=skip-hdr, n_max=hdr+1, col_names=FALSE, ...)))
+	reader <- if (is_excel(f) && !grepl("\\.xlsx$", f, ignore.case = TRUE)) readxl::read_xlsx else readxl::read_excel
+	suppressMessages(x <- as.data.frame(reader(f, skip=skip, ...)))
+	suppressMessages(nms <- as.data.frame(reader(f, skip=skip-hdr, n_max=hdr+1, col_names=FALSE, ...)))
 	nms <- apply(nms, 2, function(i) paste(i[!is.na(i)], collapse="_"))
 	if (fix_names) {
 		nms <- fix_varnames(nms)

@@ -332,15 +332,80 @@ compare_clean_files <- function(old_clean_dir, new_clean_dir, id) {
 }
 
 
-update_carob <- function(path, group="") {
+get_provider <- function(jf) {
+	okf <- file.path(dirname(jf), "ok.txt")
+	if (file.exists(okf)) {
+		lines <- try(readLines(okf, warn = FALSE), silent = TRUE)
+		if (!inherits(lines, "try-error")) {
+			u <- grep("^https?://", lines, value = TRUE)
+			if (length(u) > 0) {
+				host <- tolower(sub("^https?://([^/:]+).*$", "\\1", u[1]))
+				if (nzchar(host)) return(host)
+			}
+		}
+	}
+	x <- try(jsonlite::fromJSON(jf), silent = TRUE)
+	if (!inherits(x, "try-error")) {
+		pub <- x$data$publisher
+		if (!is.null(pub) && length(pub) > 0 && nzchar(pub[1])) return(as.character(pub[1]))
+		auth <- x$data$authority
+		if (!is.null(auth) && length(auth) > 0 && nzchar(auth[1])) return(as.character(auth[1]))
+	}
+	""
+}
+
+
+is_timeout_error <- function(err) {
+	grepl("timed out|timeout was reached", paste(as.character(err), collapse = " "), ignore.case = TRUE)
+}
+
+
+timeout_host_from_error <- function(err) {
+	txt <- paste(as.character(err), collapse = " ")
+	m <- regmatches(txt, regexpr("\\[([^\\]]+)\\]", txt, perl = TRUE))
+	if (length(m) == 1 && nzchar(m)) {
+		tolower(gsub("^\\[|\\]$", "", m))
+	} else {
+		""
+	}
+}
+
+
+update_carob <- function(path, group="", max_timeouts=5) {
 
 	jff <- list.files(file.path(path, "data/raw/", group), pattern=".json$", recursive=TRUE, full.names=TRUE)
 	jff <- grep("/old_", jff, value=TRUE, invert=TRUE)
 	jff <- jff[file.exists(file.path(dirname(jff), "ok.txt"))]
+
+	timeouts <- integer()
+	skipped <- integer()
+
+	record_timeout <- function(prov, err_msg) {
+		if (!nzchar(prov)) prov <- timeout_host_from_error(err_msg)
+		if (!nzchar(prov)) return(invisible(NULL))
+		cur <- if (prov %in% names(timeouts)) timeouts[[prov]] else 0L
+		cur <- cur + 1L
+		timeouts[[prov]] <<- cur
+		if (cur == as.integer(max_timeouts) + 1L) {
+			message(paste0("provider '", prov, "' timed out ", cur, " times; skipping remaining datasets from this provider"))
+			utils::flush.console()
+		}
+		invisible(NULL)
+	}
 	
 	for (jf in jff) {
+		prov <- get_provider(jf)
+		if (nzchar(prov) && (prov %in% names(timeouts)) && (timeouts[[prov]] > max_timeouts)) {
+			skipped[[prov]] <- (if (prov %in% names(skipped)) skipped[[prov]] else 0L) + 1L
+			next
+		}
 		test <- try(is_current(jf))
-		if (inherits(test, "try-error")) next
+		if (inherits(test, "try-error")) {
+			if (is_timeout_error(test)) {
+				record_timeout(prov, test)
+			}
+			next
+		}
 		if (is.list(test)) {
 			d <- dirname(jf)
 			grp <- basename(dirname(d))
@@ -371,6 +436,9 @@ update_carob <- function(path, group="") {
 				message(paste0("  download failed (", err, "); restoring old files"))
 				utils::flush.console()
 				restore_archived_version(d, p, dd)
+				if (inherits(dl, "try-error") && is_timeout_error(dl)) {
+					record_timeout(prov, dl)
+				}
 				next
 			}
 
@@ -412,5 +480,12 @@ update_carob <- function(path, group="") {
 			}
 			utils::flush.console()
 		}
+	}
+
+	if (length(skipped) > 0) {
+		for (p in names(skipped)) {
+			message(paste0("skipped ", skipped[[p]], " dataset(s) from '", p, "' due to timeouts"))
+		}
+		utils::flush.console()
 	}
 }
