@@ -94,69 +94,50 @@ make_version <- function(path) {
 	}
 }
 
-combine_compiled <- function(path, zip=TRUE, ...) {
+combine_compiled <- function(path, ...) {
 
-	fff <- list.files(file.path(path, "data", "clean"), pattern=".csv$", recursive=TRUE)
-	grps <- unique(sapply(strsplit(fff, "/"), function(i) ifelse(length(i) > 1, i[1], "doi")))
 	cpath <- file.path(path, "data", "compiled")
 
 	pzip <- Sys.getenv("R_ZIPCMD")
 	if (pzip == "") {pzip <- "zip"}
-	zipflags <- "-jq9"		
+	zipflags <- "-jq9"
 
-	ff <- list.files(cpath, pattern = "^carob_all.*.csv$|^carob_all.*.zip$", full.names=TRUE)
-	# |^carob_all.*.xlsx$
-	file.remove(ff)
+	old <- list.files(cpath, pattern = "^carob_all_latest.*\\.(csv|zip)$", full.names=TRUE)
+	if (length(old) > 0) file.remove(old)
 
-	ff <- list.files(cpath, pattern = "\\.csv$", full.names=TRUE)
+	ff <- list.files(cpath, pattern = "^carob_.*_latest.*\\.csv$", full.names=TRUE)
+	ff <- ff[!grepl("^carob_all_", basename(ff))]
 
-	i <- grep("terms.csv$", ff)
-	gf <- ff[i]
-	ff <- ff[-i]
-	cterms <- unique(lapply(gf, utils::read.csv))
-	cterms <- do.call(bindr, cterms)
-	fterms <- file.path(cpath, paste0("carob_all_terms_latest.csv"))
-	data.table::fwrite(cterms, fterms, row.names=FALSE)
-	fg <- c("_metadata", "_warnings", "_long", "")
-	fg <- paste0("latest", fg)
-
-	for (add in c("-cc", "")) {
-		j <- grepl(paste0("-cc.csv$"), ff)		
-		if (add == "") {
-			j <- !j
-		}
-		fi <- ff[j]
-		d <- list()
-		fcsv <- NULL
-		for (x in fg) {
-			name <- ifelse(x=="", "data", x)
-			i <- grep(paste0(x, add, ".csv$"), fi)
-			gf <- fi[i]
-			fi <- fi[-i]
-			y <- lapply(gf, utils::read.csv)
-			d[[name]] <- do.call(bindr, y)
-			outf <- file.path(cpath, paste0("carob_all_", x, add, ".csv"))
-			outf <- gsub("_-cc.csv", "-cc.csv", outf)
-			outf <- gsub("_.csv", ".csv", outf)
-			data.table::fwrite(d[[name]], outf, row.names=FALSE)
-			fcsv <- c(fcsv, outf)
-		}
-
-# does not fit into excel anymore
-#		if (excel) {
-#			fxls <- gsub(".csv$", ".xlsx", outf)
-#			d$terms = cterms
-#			d <- d[c(1,5,4,3,2)]
-#			writexl::write_xlsx(d, fxls)
-#			rm(d)
-#		}
-
-		if (zip) {
-			fzip <- gsub("\\.csv$", ".zip", outf)
-			zf <- c(fcsv, fterms)
-			utils::zip(fzip, zf, zipflags, zip=pzip)
-		}
+	ti <- grep("_latest_terms\\.csv$", ff)
+	fterms <- NULL
+	if (length(ti) > 0) {
+		tf <- ff[ti]
+		ff <- ff[-ti]
+		newest <- tf[which.max(file.info(tf)$mtime)]
+		fterms <- file.path(tempdir(), "carob_terms.csv")
+		file.copy(newest, fterms, overwrite=TRUE)
+		on.exit(unlink(fterms), add=TRUE)
 	}
+
+	mf <- grep("_latest_metadata\\.csv$", ff, value=TRUE)
+	if (length(mf) > 0) {
+		meta <- do.call(bindr, lapply(mf, utils::read.csv))
+		fmeta <- file.path(cpath, "carob_all_metadata.csv")
+		data.table::fwrite(meta, fmeta, row.names=FALSE)
+	}
+
+	out <- character(0)
+	for (add in c("-cc", "")) {
+		is_cc <- grepl("-cc\\.csv$", ff)
+		fi <- if (add == "-cc") ff[is_cc] else ff[!is_cc]
+		if (length(fi) == 0) next
+		fzip <- file.path(cpath, paste0("carob_all_latest", add, ".zip"))
+		if (file.exists(fzip)) file.remove(fzip)
+		zf <- c(fi, fterms)
+		utils::zip(fzip, zf, flags=zipflags, zip=pzip)
+		out <- c(out, fzip)
+	}
+	invisible(out)
 }
 
 

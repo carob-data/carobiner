@@ -35,7 +35,7 @@ make_carob(path, group="", quiet=FALSE, check="all", report=FALSE, combine=FALSE
   \item{group}{character. group name}
   \item{quiet}{logical. Be quiet?}
   \item{check}{character. "none" to do no checking; "nogeo" to not check coordinates. "all" and all other values to do all checks}
-  \item{combine}{logical. Should all data also be compiled into one file?}
+  \item{combine}{logical. Should the compiled group files also be combined into a single zip file?}
   \item{cache}{logical. If \code{TRUE}, datasets are only recompiled if the R script has changed after the last compilation}
   \item{report}{logical. Should a html report be created for the datasets?}
   \item{split_license}{logical. Make a separate aggregation for data with a CC license?}
